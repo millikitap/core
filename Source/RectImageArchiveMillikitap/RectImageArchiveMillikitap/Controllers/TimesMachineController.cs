@@ -240,11 +240,7 @@ namespace RectImageArchiveMillikitap.Controllers
             attachment.Add(file);
             var user = (CustomMembershipUser)Membership.GetUser(User.Identity.Name);
             var res = await new BLogicMillikitap().uploadFiles(user,attachment, i);
-            if (res.Result)
-            {
-                return RedirectToAction("EditBook", new { BookId = i });
-            }
-            return Json(new { status = res.Result, exception = res.exception });
+            return Json(new { Result = res.Result, exception = res.exception });
         }
 
         [HttpPost]
@@ -272,11 +268,7 @@ namespace RectImageArchiveMillikitap.Controllers
             }
             var user = (CustomMembershipUser)Membership.GetUser(User.Identity.Name);
             var res = await new BLogicMillikitap().uploadFiles(user,upload_imgs, i);
-            if (res.Result)
-            {
-                return RedirectToAction("EditBook", new { BookId = i });
-            }
-            return Json(new { status = res.Result, exception = res.exception });            
+            return Json(new { Result = res.Result, exception = res.exception });            
         }
         
 

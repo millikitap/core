@@ -1154,7 +1154,7 @@
                                                 </div>
                                                 <div>
                                                     <input type="radio" data-type="2" id="zip_down" name="param_loader" value="2">
-                                                    <label for="zip_down">Загрузка ZIP архива(7-Zip)</label>
+                                                    <label for="zip_down">Загрузка ZIP-архива</label>
                                                 </div>
                                             </div>
                                             <br />
@@ -1174,7 +1174,7 @@
                                                             <div id="status"></div>
                                                             <form class="form-group" action="@Url.Action("uploadZIP", "TimesMachine")" id="zipUploader" method="post" enctype="multipart/form-data">
                                                                 <input type="hidden" name="i" value="@info.BookId" />
-                                                                <input id="inputZIPFile" style="background: #2f8ab9; color: white;margin-bottom: 5px;" class="form-control" type="file" accept=".zip,.7zip" name="file">
+                                                                <input id="inputZIPFile" style="background: #2f8ab9; color: white;margin-bottom: 5px;" class="form-control" type="file" accept=".zip,application/zip" name="file">
                                                                 <button class="btn btn-primary" type="submit" id="uploadZIP_btn"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Начать загрузку ZIP</button>
                                                             </form>
                                                         </div>
@@ -1725,6 +1725,8 @@
         var uploader;
         //http://hayageek.com/docs/jquery-upload-file.php
         function initUploadFile() {
+            var uploadFailed = false;
+            var uploadError = '';
             uploader = $("#fileuploader").uploadFile({
                 url: "/TimesMachine/uploadPage",
                 fileName: "file",
@@ -1736,10 +1738,31 @@
                 previewWidth: '30px',
                 multiple: true,
                 acceptFiles: "image/*",
+                returnType: "json",
                 onSelect: function (files) {
+                    uploadFailed = false;
+                    uploadError = '';
                     alert("Начало загрузки... Ожидайте конца выполнения...");
                 },
+                onError: function () {
+                    uploadFailed = true;
+                    uploadError = 'Сервер не принял файл';
+                },
+                onSuccess: function (files, response) {
+                    var data = response;
+                    if (typeof data === 'string') {
+                        try { data = JSON.parse(data); } catch (e) { data = null; }
+                    }
+                    if (!data || data.Result === false) {
+                        uploadFailed = true;
+                        uploadError = (data && data.exception) ? data.exception : 'Файл не сохранён';
+                    }
+                },
                 afterUploadAll: function (obj) {
+                    if (uploadFailed) {
+                        alert(uploadError || 'Файлы не сохранены');
+                        return;
+                    }
                     alert('Файлы загружены. Перезагружаем страницу...');
                     location.reload();
                 },
@@ -2309,13 +2332,16 @@
                     }
                 },
                 complete: function (xhr) {
-                    status.html(xhr.responseJSON);
-                    if (xhr.responseJSON.Result) {
-                        alert('Файлы успешно распакованы. Перезагружаем страницу.');
+                    var data = xhr.responseJSON;
+                    if (!data && xhr.responseText) {
+                        try { data = JSON.parse(xhr.responseText); } catch (e) { data = null; }
+                    }
+                    if (data && data.Result) {
+                        alert(data.exception || 'Файлы успешно распакованы. Перезагружаем страницу.');
                         location.reload();
                     }
                     else {
-                        alert('Ошибка при выполнении операции.');
+                        alert((data && data.exception) ? data.exception : 'Ошибка при выполнении операции.');
                     }
                     $(bar).show();
                     $(percent).show();

@@ -1116,55 +1116,95 @@ namespace RectImageArchiveMillikitap.Models
                 using (var Db = new ModelAppBaseMillikitap())
                 {
                     var book = await Db?.Books?.Where(c => c.BookId == i)?.FirstOrDefaultAsync();
+                    if (book == null)
+                    {
+                        result.Result = false;
+                        result.exception = "Книга не найдена. Сохраните книгу и повторите загрузку.";
+                        return result;
+                    }
+                    if (string.IsNullOrWhiteSpace(book.HashFolder))
+                    {
+                        result.Result = false;
+                        result.exception = "У книги нет папки для файлов. Сохраните книгу и повторите загрузку.";
+                        return result;
+                    }
                     string path = HttpContext.Current.Server.MapPath($"~/Books/{book.HashFolder}/");
                     if (!Directory.Exists(path))
                     {
                         Directory.CreateDirectory(path);
                     }
                     List<string> pagesSeparators = new List<string>();
-                    foreach (var file in upload_imgs)
+                    List<string> errors = new List<string>();
+                    int saved = 0;
+                    foreach (var file in upload_imgs ?? Enumerable.Empty<HttpPostedFileBase>())
                     {
-                        if (file != null && file.ContentLength > 0)
+                        if (file == null || file.ContentLength <= 0)
                         {
-                            if (isImageExtension(file.FileName))
-                            {
-                                string previewFileName = null;
-                                string fileName = CreateMD5(Path.GetFileName(file.FileName));
-                                string extension = Path.GetExtension(file.FileName);
-                                string cryptFilename = string.Format("{0}{1}", fileName, extension);
+                            errors.Add("Пустой файл");
+                            continue;
+                        }
+                        if (!isImageExtension(file.FileName))
+                        {
+                            errors.Add($"«{file.FileName}» не является изображением");
+                            continue;
+                        }
+                        string previewFileName = null;
+                        string fileName = CreateMD5(Path.GetFileName(file.FileName));
+                        string extension = Path.GetExtension(file.FileName);
+                        string cryptFilename = string.Format("{0}{1}", fileName, extension);
 
-                                try
-                                {
-                                    previewFileName = getPreviewImage(file, path, cryptFilename);
-                                }
-                                catch
-                                {
-                                    
-                                }
-                                try
-                                {
-                                    file.SaveAs($"{path}{cryptFilename}");
-                                    pagesSeparators.Add($"{path}{cryptFilename}");
-                                    Db.Pages.Add(new Pages
-                                    {
-                                        Book = book,
-                                        FileName = cryptFilename,
-                                        FileNamePreview = previewFileName,
-                                        DateTimeCreated = DateTime.Now,
-                                        Visible = true
-                                    });
-                                }
-                                catch
-                                {
-                                    continue;
-                                }
+                        try
+                        {
+                            previewFileName = getPreviewImage(file, path, cryptFilename);
+                        }
+                        catch
+                        {
+                        }
+                        try
+                        {
+                            if (file.InputStream != null && file.InputStream.CanSeek)
+                            {
+                                file.InputStream.Seek(0, SeekOrigin.Begin);
                             }
+                            file.SaveAs($"{path}{cryptFilename}");
+                            pagesSeparators.Add($"{path}{cryptFilename}");
+                            Db.Pages.Add(new Pages
+                            {
+                                Book = book,
+                                FileName = cryptFilename,
+                                FileNamePreview = previewFileName,
+                                DateTimeCreated = DateTime.Now,
+                                Visible = true
+                            });
+                            saved++;
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add($"«{file.FileName}»: {ex.Message}");
                         }
                     }
+                    if (saved == 0)
+                    {
+                        result.Result = false;
+                        result.exception = errors.Any()
+                            ? string.Join("; ", errors)
+                            : "Ни один файл не сохранён";
+                        return result;
+                    }
                     await Db.SaveChangesAsync();
-                    await addLog(user.UserId, LogType.AddPage, book, string.Join(",", pagesSeparators));
+                    try
+                    {
+                        await addLog(user.UserId, LogType.AddPage, book, string.Join(",", pagesSeparators));
+                    }
+                    catch
+                    {
+                    }
+                    result.Result = true;
+                    if (errors.Any())
+                    {
+                        result.exception = "Часть файлов не сохранена: " + string.Join("; ", errors);
+                    }
                 }
-                result.Result = true;
                 return result;
             }
             catch (Exception ex)
@@ -1190,6 +1230,12 @@ namespace RectImageArchiveMillikitap.Models
                 using (var Db = new ModelAppBaseMillikitap())
                 {
                     var book = await Db?.Books?.Where(c => c.BookId == i)?.FirstOrDefaultAsync();
+                    if (book == null || string.IsNullOrWhiteSpace(book.HashFolder))
+                    {
+                        result.Result = false;
+                        result.exception = "Книга не найдена или у неё нет папки для файлов. Сохраните книгу и повторите загрузку.";
+                        return result;
+                    }
                     string path = HttpContext.Current.Server.MapPath($"~/Books/{book.HashFolder}/");
                     //Iamge directory
                     if (!Directory.Exists(path))
@@ -1204,10 +1250,18 @@ namespace RectImageArchiveMillikitap.Models
                     }
 
                     List<string> pagesSeparators = new List<string>();
+                    int saved = 0;
+                    List<string> errors = new List<string>();
 
                     foreach (var fileZip in upload_zip)
                     {
-                        string nameZip = pathZIPtemp + "/" + fileZip.FileName;
+                        var zipExtension = Path.GetExtension(fileZip?.FileName ?? string.Empty);
+                        if (!string.Equals(zipExtension, ".zip", StringComparison.OrdinalIgnoreCase))
+                        {
+                            errors.Add("Поддерживается только архив ZIP, не 7z");
+                            continue;
+                        }
+                        string nameZip = pathZIPtemp + "/" + Path.GetFileName(fileZip.FileName);
                         fileZip.SaveAs(nameZip);
                                                 
                         using (ZipArchive archive = ZipFile.Open(nameZip, ZipArchiveMode.Read, Encoding.GetEncoding("cp866")))
@@ -1249,17 +1303,36 @@ namespace RectImageArchiveMillikitap.Models
                                         //BlobImage = $"data:image/jpeg;base64,{getBase64Image(bytes)}",
                                         Visible = true
                                     });
+                                    saved++;
                                 }
-                                catch
+                                catch (Exception ex)
                                 {
-                                    continue;
+                                    errors.Add($"«{entry.FullName}»: {ex.Message}");
                                 }
                             }
                         }
                     }                    
                     
+                    if (saved == 0)
+                    {
+                        result.Result = false;
+                        result.exception = errors.Any()
+                            ? string.Join("; ", errors)
+                            : "В архиве нет изображений";
+                        return result;
+                    }
                     await Db.SaveChangesAsync();
-                    await addLog(user.UserId, LogType.AddPage, book, string.Join(",", pagesSeparators));
+                    try
+                    {
+                        await addLog(user.UserId, LogType.AddPage, book, string.Join(",", pagesSeparators));
+                    }
+                    catch
+                    {
+                    }
+                    if (errors.Any())
+                    {
+                        result.exception = "Часть файлов не сохранена: " + string.Join("; ", errors);
+                    }
 
                     try
                     {
