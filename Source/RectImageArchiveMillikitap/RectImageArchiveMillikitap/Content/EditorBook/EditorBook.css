@@ -1,0 +1,523 @@
+﻿.flx {
+    display: flex;
+}
+
+form input[type=checkbox], form input[type=radio] {
+    position: absolute;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    width: 1px;
+    margin: -1px;
+    padding: 0;
+}
+
+form input[type=checkbox] + label {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    text-indent: -9999px;
+    background: #afafaf;
+    width: 60px;
+    height: 30px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(1, 0.1, 0, 0.9);
+}
+
+form input[type=checkbox] + label:before {
+    content: "";
+    position: absolute;
+    display: block;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: #0288D1;
+    border-radius: 100px;
+    transition: all 0.3s cubic-bezier(1, 0.1, 0, 0.9) 0.1s;
+    transform: translateZ(0) scale(0);
+}
+
+form input[type=checkbox] + label:after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    display: block;
+    height: 26px;
+    width: 26px;
+    background: white;
+    border-radius: 100%;
+    box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(1, 0.1, 0, 0.9);
+    transform: translateZ(0) translateX(0);
+}
+
+form input[type=checkbox]:checked + label {
+    background: #f0ad4e;
+}
+
+form input[type=checkbox]:checked + label:after {
+    left: calc(100% - 28px);
+    transform: translateZ(0);
+}
+
+
+
+.btn-primary {
+    background-color: #128156;
+    border: none;
+}
+
+.btn-primary:hover {    
+    background-color: #0a6b6d;
+}
+
+
+
+/* InputRange */
+.percent_complete .card_track {
+    width: 100%;
+    background: #fff6;
+    display: flex;
+    position: relative;
+    border-radius: 20px;
+    box-shadow: 0px 2px 10px -10px #2f2f2f;
+    flex-direction: column;
+    padding: 30px;
+    box-sizing: border-box;
+    margin: 10px 0 20px 0px;
+}
+
+    .percent_complete .card_track .row {
+        margin: 10px 0;
+        display: flex;
+    }
+
+    .percent_complete .card_track p {        
+        color: var(--great-color);
+    }
+
+.icon {
+    height: 40px;
+    width: 40px;
+    position: relative;
+}
+
+    .icon svg {
+        height: 100%;
+        width: 100%;
+        position: absolute;
+    }
+
+.range {
+    position: relative;
+    width: 360px;
+    height: 17px;
+    left: 3px;
+    top: 10px;
+}
+
+    .range svg {
+        width: 100%;
+        height: 100%;
+    }
+
+        .range svg path {
+            transition: linear 0.5s;
+        }
+
+input[type="range"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    margin: 0;
+    padding: 0;
+    transform: translateY(-50%);
+    background: none;
+    transition: linear 0.5s;
+}
+
+    input[type="range"]:focus {
+        outline: 0;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+        width: 26px;
+        -webkit-appearance: none;
+        height: 26px;
+        cursor: pointer;
+        border-radius: 50%;
+        border: 6px solid #fff;
+        box-shadow: 0px 0px 6px 0px #ccc;
+        z-index: 2;
+        position: relative;
+        margin-left: 3px;
+        margin-top: -3px;
+    }
+
+.range.bad svg path#path-ok,
+.range.bad svg path#path-good,
+.range.bad svg path#path-great {
+    fill: var(--track-color);
+}
+
+.icon svg#icon-bad path {
+    fill: var(--bad-color);
+}
+
+.icon svg#icon-ok path {
+    fill: var(--ok-color);
+}
+
+.icon svg#icon-good path {
+    fill: var(--good-color);
+}
+
+.icon svg#icon-great path {
+    fill: var(--great-color);
+}
+
+.row.bad input[type="range"]::-webkit-slider-thumb {
+    background: var(--bad-color);
+}
+
+.row.ok input[type="range"]::-webkit-slider-thumb {
+    background: var(--ok-color);
+}
+
+.row.good input[type="range"]::-webkit-slider-thumb {
+    background: var(--good-color);
+}
+
+.row.great input[type="range"]::-webkit-slider-thumb {
+    background: var(--great-color);
+}
+
+.row .icon svg {
+    display: none;
+}
+
+.row.bad .icon svg#icon-bad,
+.row.ok .icon svg#icon-ok,
+.row.good .icon svg#icon-good,
+.row.great .icon svg#icon-great {
+    display: block;
+    animation: heartBeat 1s;
+}
+
+@-webkit-keyframes heartBeat {
+    0% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+
+    14% {
+        -webkit-transform: scale(1.3);
+        transform: scale(1.3);
+    }
+
+    28% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+
+    42% {
+        -webkit-transform: scale(1.3);
+        transform: scale(1.3);
+    }
+
+    70% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+}
+
+@keyframes heartBeat {
+    0% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+
+    14% {
+        -webkit-transform: scale(1.3);
+        transform: scale(1.3);
+    }
+
+    28% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+
+    42% {
+        -webkit-transform: scale(1.3);
+        transform: scale(1.3);
+    }
+
+    70% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+}
+
+.animate__heartBeat {
+    -webkit-animation-duration: 1.3s;
+    animation-duration: 1.3s;
+    -webkit-animation-duration: calc(var(--animate-duration) * 1.3);
+    animation-duration: calc(var(--animate-duration) * 1.3);
+    -webkit-animation-name: heartBeat;
+    animation-name: heartBeat;
+    -webkit-animation-timing-function: ease-in-out;
+    animation-timing-function: ease-in-out;
+}
+
+.range:after {
+    content: "";
+    position: absolute;
+    box-shadow: 99px 31px 0px 1px var(--track-color), 183px 31px 0px 1px var(--track-color), 267px 31px 0px 1px var(--track-color), 351px 31px 0px 1px var(--track-color);
+    left: 0;
+    height: 6px;
+}
+
+.row.bad .range:after {
+    box-shadow: 99px 31px 0px 1px var(--bad-color), 183px 31px 0px 1px var(--track-color), 267px 31px 0px 1px var(--track-color), 351px 31px 0px 1px var(--track-color);
+}
+
+.row.ok .range:after {
+    box-shadow: 99px 31px 0px 1px var(--track-color), 183px 31px 0px 1px var(--ok-color), 267px 31px 0px 1px var(--track-color), 351px 31px 0px 1px var(--track-color);
+}
+
+.row.good .range:after {
+    box-shadow: 99px 31px 0px 1px var(--track-color), 183px 31px 0px 1px var(--track-color), 267px 31px 0px 1px var(--good-color), 351px 31px 0px 1px var(--track-color);
+}
+
+.row.great .range:after {
+    box-shadow: 99px 31px 0px 1px var(--track-color), 183px 31px 0px 1px var(--track-color), 267px 31px 0px 1px var(--track-color), 351px 31px 0px 1px var(--great-color);
+}
+
+.card__image {
+    overflow: hidden;
+    box-shadow: 0px 12px 12px #ededed;
+}
+
+.card__image,.no_round img {
+    border-radius: 0px;
+}
+
+.no_round img {
+    display: flex;
+    margin: auto;
+}
+
+.progress-bar {
+    margin: 0 auto !important;
+    display: table !important;
+    text-align: center;
+    border-radius: 5px;
+}
+
+.panel-body {
+    padding: 25px 10px;
+}
+
+
+.c-card__body {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.ajax-file-upload-statusbar {
+    width: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ajax-file-upload-container {
+    display: flex;
+    flex-direction: column-reverse;
+    flex-flow: row-reverse;
+    column-count: 1;
+    flex-wrap: wrap-reverse;
+}
+
+.ajax-file-upload-statusbar {
+    flex-grow: 1 !important;
+}
+
+#fileuploader {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+
+/* Card list images */
+a.list-group-item:before {
+    content: '';
+}
+
+.list-group-item {
+    margin-left: 0px;
+    padding-left: 15px;
+}
+
+    .list-group-item .row > div.col-sm-5 {
+        margin-left: 10px;
+    }
+
+    .list-group-item .row > div.col-sm-6 {
+        margin-left: -10px;
+    }
+
+
+.list-group-item-heading,
+.list-group-item-text {
+    padding-left: 3px;
+}
+
+.form-inline {
+    padding-right: 1.1em;
+}
+
+    .form-inline .btn-primary {
+        margin-top: 0.5em;
+    }
+
+@media only screen and (min-width: 768px) {
+    .form-inline {
+        padding-right: 0;
+    }
+
+        .form-inline .btn-primary {
+            margin-top: 0;
+            margin-left: 2em;
+        }
+}
+
+@media only screen and (max-width: 767px) {
+    .list-group-item .row > div.col-sm-5 {
+        margin-left: 0px;
+        padding-left: 5px;
+    }
+
+    .list-group-item-heading {
+        margin-top: 3px;
+    }
+}
+
+img {
+    max-width: unset;
+    height: auto;
+}
+
+#prev_images img
+{
+    max-width:80px;
+}
+
+.wrap {
+    word-break: break-word;
+}
+
+/* Accordion */
+.accordion__item {
+    margin: 5px auto;
+}
+
+    .accordion__item .accordion__title {
+        position: relative;
+        display: block;
+        padding: 10px 5px 20px 10px;
+        color: #202020;
+        font-size: 17px;
+        text-decoration: none;
+        background-color: #ffffff;
+        border-radius: 3px;
+        -webkit-transition: background-color 0.2s;
+        transition: background-color 0.2s;
+        cursor: pointer;
+    }
+
+    .accordion__item .accordion-active {
+        background-color: #128156;
+        color: #ffffff;
+    }
+
+    .accordion__item .accordion__title .accordion__arrow {
+        position: absolute;
+        right: 10px;
+        display: inline-block;
+        vertical-align: middle;
+        width: 30px;
+        height: 30px;
+        text-align: center;
+        color: #fff;
+        line-height: 30px;
+        font-size: 30px;
+        background-color: #128156;
+        border-radius: 50%;
+        -webkit-transition: all 0.2s ease-out;
+        transition: all 0.2s ease-out;
+    }
+
+    .accordion__item .accordion__rotate {
+        transform: rotate(225deg);
+    }
+
+    .accordion__item .accordion__content {
+        padding: 30px;
+        margin-bottom: 2px;
+        font-size: 14px;
+        display: none;
+        background-color: #e2e2e26e;
+        box-shadow: -8px 0px 10px 0px #d0d0d0;
+    }
+
+    .accordion__item .accordion__arrow-item {
+        font-weight: 700;
+    }
+/*-------------------------------------*/
+
+.progressDefault {
+    background-color: #b9b9b9 !important;
+    position: inherit !important;
+    margin-top: 20px !important;
+    height: 15px;
+    border-radius: 10px;
+}
+
+.select2
+{
+    width:100%!important;
+}
+
+.table td, .table th {   
+    vertical-align: middle!important;    
+}
+
+.prevCheck {
+    position: absolute;
+    padding: 5px;
+    background: #ffffff8f;
+    box-shadow: 0px 6px 2px 0px #86868696;
+    cursor:pointer;
+}
+
+.dropdown-item {
+    width: auto !important;
+}
+
+/* other */
+.hide
+{
+    display:none;
+}
+
+.deletePage {
+    opacity: 0.4;
+    pointer-events: none;
+}

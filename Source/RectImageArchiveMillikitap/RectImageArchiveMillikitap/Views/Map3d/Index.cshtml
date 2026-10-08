@@ -1,0 +1,236 @@
+﻿
+@{
+    ViewBag.Title = "TimeLine";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+<link href="~/Content/MapHistory/css/leaflet.css" rel="stylesheet" />
+<link href="~/Content/MapHistory/css/bootstrap.min.css" rel="stylesheet" />
+<link href="~/Content/MapHistory/css/MapHistory.css" rel="stylesheet" />
+
+
+<body>
+    <div class="row full">
+        <input name="inputJson" type="hidden" value="@(ViewData["JSONinfoPageHistory"] as string)" />
+        <div class="positionControl backPosition" onclick="markerControl.toBack()">
+            <span class="material-symbols-outlined" title="К предыдущей позиции"> arrow_back_ios_new </span>
+        </div>
+        <div class="positionControl nextPosition" onclick="markerControl.toNext()">
+            <span class="material-symbols-outlined" title="К следующей позиции"> arrow_forward_ios </span>
+        </div>
+        <div id="map" class="col col-sm-9 full"></div>
+        <div class="col col-sm-3 full" id="r_container">
+            <div class="hide">
+                <input id="range" type="number" value='20' min='0' max="50" step="10" width="50" />
+            </div>
+            @* Описание слайда *@
+            <div class="blog-card" id="infoContainer">
+                <div class="meta">
+                    <div class="photo"></div>
+                    @*<ul class="details">
+                        <li class="author">
+                            <a href="#">John Doe</a>
+                        </li>
+                        <li class="date">Aug. 24, 2015</li>
+                        <li class="tags">
+                            <ul>
+                                <li><a href="#">Learn</a></li>
+                                <li><a href="#">Code</a></li>
+                                <li><a href="#">HTML</a></li>
+                                <li><a href="#">CSS</a></li>
+                            </ul>
+                        </li>
+                    </ul>*@
+                </div>
+                <div class="description">
+                    <h1></h1>
+                    <h2></h2>
+                    <p class="descr"></p>
+                    <p class="read-more">
+                        <a href="#">Подробнее</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/Content/MapHistory/js/leaflet.js"></script>   
+    <script src="~/Content/MapHistory/js/jquery.min.js"></script>    
+
+    <script id="rendered-js">
+        var markerControl;
+        class MarkerControlComponent {
+            constructor() {                  
+                this.toBack = this.toBack.bind(this);
+                this.toNext = this.toNext.bind(this);
+                this.slides = {};
+                this.triggerRadius();
+                this.currentPosition = 0;
+                this.bindKeyboard();
+            }
+
+            initMap() {
+                this.map = L.map('map', { preferCanvas: true }).setView([46.76336, -71.32453], 16);
+                var OpenStreetMap_Mapnik = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+                    maxZoom: 19,
+                    subdomains: ['mt0', 'mt1', 'mt2', 'mt3']                    
+                }).addTo(this.map);
+
+                L.control.scale({ maxWidth: 240, metric: true, position: 'bottomleft' }).addTo(this.map);
+                this.initSlidesArray();
+            }
+
+            bindKeyboard() {
+                return;
+                $('body').on('keydown', function (e) {
+                    if (e.originalEvent.keyCode == 37) {                        
+                        markerControl.toBack();
+                    }
+                    else if ((e.originalEvent.keyCode == 39)) {                        
+                        markerControl.toNext();
+                    }
+                    e.preventDefault();
+                });
+            }
+
+            triggerRadius() {
+                $("#range").change(function (e) {
+                    var radius = parseInt($(this).val());
+                    this.buffers.forEach(function (e) {
+                        e.setRadius(radius);
+                        e.addTo(this.map);
+                    });
+                });
+            }           
+            
+            //Формирование массива со слайдами
+            initSlidesArray() {
+                //Получение json с input -> приведение к объекту []
+                var inputJsonStr = $('[name="inputJson"]').val();
+                if (inputJsonStr.length > 0) {
+                    var listItems = JSON.parse(inputJsonStr);
+                    this.slides = listItems;
+                    console.log('listItems', listItems);
+                    //Формирование маркеров
+                    for (var i = 0; i < listItems.length; i++) {
+                        this.addMarker(listItems[i]);
+                    }                   
+                }                
+                this.viewControlUpdate();
+                this.setSlideView();
+            }
+
+            //Обновление состояния клавиш переключения
+            viewControlUpdate() {
+                if (this.currentPosition == 0) {
+                    $('.positionControl.backPosition').addClass('hide');
+                    if (this.currentPosition < this.slides.length-1) {
+                        $('.positionControl.nextPosition').removeClass('hide');
+                    }
+                    else {
+                        $('.positionControl.nextPosition').addClass('hide');
+                    }
+                }
+                else {
+                    if (this.currentPosition < this.slides.length-1) {
+                        $('.positionControl.backPosition').removeClass('hide');
+                        $('.positionControl.nextPosition').removeClass('hide');
+
+                    }
+                    else {
+                        if (this.currentPosition == this.slides.length - 1) {
+                            $('.positionControl.backPosition').removeClass('hide');
+                            $('.positionControl.nextPosition').addClass('hide');
+                        }
+                    }
+                }
+                this.setSlideView();
+            }
+
+            //Описание слайда и медиа
+            setSlideView() {
+                var slide = this.slides[this.currentPosition];
+                if (slide) {
+                    //Заполняем оформлениен -> Переходим к маркеру
+                    //Заполнение                    
+                    var container = $('#infoContainer');
+                    $(container).css('opacity', '0');
+                    $(container).stop().animate({ opacity: 1 }, { queue: false, duration: 'slow' })
+                        .queue(function () {
+                                                      
+                        });
+
+                    var photo = $(container).find('.photo');
+                    var title = $(container).find('.description h1');
+                    var title2 = $(container).find('.description h2');
+                    var descr = $(container).find('.descr');
+
+                    $(photo).css('background-image', 'url(' + slide.UrlMedia + ')');
+                    $(title).html(slide.Title);
+                    $(title2).html('-');
+                    $(descr).html(slide.Description);
+
+                    //Переход
+                    this.flyTo([slide.Lat, slide.Lon], 17);                    
+                }
+            }
+
+
+            addMarker(slide) {
+                this.buffers = [];
+                var customIcon = L.divIcon({
+                    iconSize: null,
+                    className: "slideImage",
+                    html: '<img src="'+slide.UrlIconMarker+'" />'
+                });
+                var p = L.marker([slide.Lat, slide.Lon], { icon: customIcon });
+                p.id = slide.HistoryModelObjectId;
+                p.title = slide.Title;
+                p.alt = slide.Title;
+                p.bindPopup(slide.Title);
+                p.addTo(this.map);                
+                var c = L.circle([slide.Lat, slide.Lon], {
+                    color: 'gray',
+                    fillColor: '#1a1a1a70',
+                    fillOpacity: 0.5,
+                    radius: 20
+                }).addTo(this.map);
+                this.buffers.push(c);
+            }            
+
+            toBack() {
+                var slide = this.slides[this.currentPosition - 1];
+                if (slide) {
+                    this.flyTo([slide.Lat, slide.Lon,], 17);
+                    this.currentPosition = this.currentPosition - 1;                    
+                }
+                this.viewControlUpdate();
+            }
+
+            toNext() {
+                var slide = this.slides[this.currentPosition + 1];
+                if (slide) {
+                    console.log(slide);
+                    this.flyTo([slide.Lat, slide.Lon,], 17);
+                    this.currentPosition = this.currentPosition + 1;
+                }                
+                this.viewControlUpdate();
+            }
+
+            //Перемещение к метке
+            flyTo(coords, zoom) {
+                this.map.flyTo(coords, zoom);
+            }
+        }       
+               
+
+        $(document).ready(function () {
+            markerControl = new MarkerControlComponent();
+            markerControl.initMap();   
+        }); 
+        
+    </script>
+
+</body>

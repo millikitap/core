@@ -1,0 +1,22 @@
+# сборка
+**/bin/
+**/obj/
+**/.vs/
+**/packages/
+**/node_modules/
+
+# секреты боевого конфига; образец — Web.config.example
+**/Web.config
+!**/Web.config.example
+!**/Views/Web.config
+
+# данные и дистрибутив
+*.bak
+**/Books/**
+Deploy/**/*.exe
+
+# локальное
+*.user
+*.suo
+Thumbs.db
+.DS_Store

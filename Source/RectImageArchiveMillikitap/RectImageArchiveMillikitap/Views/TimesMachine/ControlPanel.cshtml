@@ -1,0 +1,453 @@
+﻿@using System.Globalization;
+@{
+    ViewBag.Title = "ПУ";
+    Layout = "~/Views/Shared/_LayoutControl.cshtml";
+    var tableBooksInfo = ViewData["InfoBooks"] as RectImageArchiveMillikitap.Models.BooksControlPanelMainList;
+    var isSuperAdmin = (bool)ViewData["IsSuperAdmin"];
+    var roles = ViewData["Roles"] as List<RectImageArchiveMillikitap.Models.CustomAuthentication.DataAccess.Role>;
+    var users = ViewData["Users"] as List<RectImageArchiveMillikitap.Models.UsersForControlPanel>;
+    string version = "4.5.3";
+}
+@* Копирование книги *@
+<div class="modal-overlay">
+    <div class="modal">
+        <a class="close-modal">
+            <svg viewBox="0 0 20 20">
+                <path fill="#000000" d="M15.898,4.045c-0.271-0.272-0.713-0.272-0.986,0l-4.71,4.711L5.493,4.045c-0.272-0.272-0.714-0.272-0.986,0s-0.272,0.714,0,0.986l4.709,4.711l-4.71,4.711c-0.272,0.271-0.272,0.713,0,0.986c0.136,0.136,0.314,0.203,0.492,0.203c0.179,0,0.357-0.067,0.493-0.203l4.711-4.711l4.71,4.711c0.137,0.136,0.314,0.203,0.494,0.203c0.178,0,0.355-0.067,0.492-0.203c0.273-0.273,0.273-0.715,0-0.986l-4.711-4.711l4.711-4.711C16.172,4.759,16.172,4.317,15.898,4.045z"></path>
+            </svg>
+        </a>
+        <div>
+            <div class="alert alert-info alert-dismissible" role="alert">                
+                После копирования книги, укажите эксперта в редактировании, которому необходимо предоставить доступ к этой книге 
+            </div>
+            <h5>Параметры копирования книги</h5>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <div class="form-control">
+                            <div>
+                                <input type="radio" id="copy_1" name="param_copy" checked value="1">
+                                <label for="copy_1">Копировать директорию с изображениями</label>
+                            </div>
+                            <div>
+                                <input type="radio" id="copy_2" name="param_copy" value="2">
+                                <label for="copy_2">Не копировать директорию с изображениями</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress" id="copyProgress" style="display:none;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                    </div>
+                    <button id="copyBookBtn" onclick="copyBook()" type="button" class="btn btn-default"><i class="fa fa-clone" aria-hidden="true"></i> Начать копирование</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<body>
+    <div class="area">
+        <ul class="circles">
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+    </div>
+    <div class="current-page">
+        <a title="Обновить страницу ПУ" href="@Url.Action("ControlPanel","TimesMachine")">
+            <img width="55" src="~/Content/Images/logo_main.png?v=@version" class="custom-logo" srcset="/Content/Images/logo_main.png?v=@version" sizes="(max-width: 300px) 100vw, 300px">
+        </a>
+        <ul class="bc">
+            <li>ПУ</li>
+            @{
+                string mvcVersion = typeof(Controller).Assembly.GetName().Version.ToString();
+            }
+            <li><span class="p_curr">Редакция @mvcVersion</span></li>
+        </ul>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-2 inset_shadow">
+                <div class="card">
+                    <div class="card__image">
+                        <a title="Перейти в параметры профиля" target="_blank" href="@Url.Action("Account","Account")">
+                            <img loading="lazy" src="https://picsum.photos/150/150" alt="">
+                        </a>
+                    </div>
+                    <div class="card__body">
+                        <span class="online"></span>
+                        <h2 class="user__name">@tableBooksInfo.Name</h2>
+                        <h2 class="user__name">@tableBooksInfo.Login</h2>
+                        <p class="user__description">@tableBooksInfo.Roles</p>
+                        <p></p>
+                    </div>
+                    <div class="card__footer">
+                        <a href="@Url.Action("EditorBook","TimesMachine")" class="btn btn__primary"><i class="fa fa-plus-circle" aria-hidden="true"></i>&nbsp;&nbsp;Новая книга</a>
+                    </div>
+                </div>
+
+                <small class="mb-2 d-inline-block text-muted"></small>
+                <div class="list-group">
+                    <a href="@Url.Action("Index","TimesMachine")" class="btn btn-default"><i class="fa fa-external-link"></i>&nbsp;&nbsp;На сайт</a>
+                    <a href="@Url.Action("HowTo","TimesMachine")" class="btn btn-default" style="border-left: 5px solid #128156; box-shadow: 0 0 10px #919191;"><i class="fa fa-question"></i>&nbsp;&nbsp;Инструкция</a>
+                    <a href="@Url.Action("Logout","Account")" class="btn btn-default"><i class="fa fa-sign-out"></i>&nbsp;&nbsp;Выйти</a>
+                </div>
+                <small class="mb-2 d-inline-block text-muted"></small>
+                <div class="list-group">
+
+                </div>
+            </div>
+            <div class="col-sm-10">
+                <!-- Nav tabs -->
+                <small class="mb-2 d-inline-block text-muted"></small>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#all" role="tab">Доступные публикации (@(tableBooksInfo.all?.Count()))</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#wait" role="tab">Скрытые публикации (@(tableBooksInfo.wait?.Count()))</a>
+                    </li>
+                    @{
+                        if (isSuperAdmin)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#users" role="tab">Пользователи (@(users?.Count()))</a>
+                            </li>
+                        }
+                    }
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane active" id="all" role="tabpanel">
+                        @{
+                            if (tableBooksInfo.all != null && tableBooksInfo.all.Any())
+                            {
+                                <div class="alert alert-info alert-dismissible" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <strong>Подсказка:</strong> Отображаются те книги, которые доступны Вам от роли
+                                </div>
+                                <table id="all_table">
+                                    <thead>
+                                        <tr>
+                                            <th>Id</th>
+                                            <th></th>
+                                            <th>Название (оригинал)</th>
+                                            <th>Инв. №</th>
+                                            <th>Инв. № сборника</th>
+                                            <th>Дата добавления</th>
+                                            <th>Страниц</th>
+                                            <th>Эксперт</th>
+                                            <th>Видимость</th>
+                                            <th>Общий прогресс</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            var groupMonth = tableBooksInfo.all.GroupBy(m => new { m.DateTimeCreated.Month, m.DateTimeCreated.Year })?.ToList();
+                                            foreach (var i in groupMonth)
+                                            {
+                                                foreach (var c in i)
+                                                {
+                                                    bool isExrimistStatements = c.isExrimistStatements.HasValue && c.isExrimistStatements.Value ? true : false;                                                    
+                                                    <tr class="@(isExrimistStatements?"isExrimistStatements":string.Empty)">
+                                                        <td class="l">@c.BookId</td>
+                                                        <td class="l">
+                                                            @{
+                                                                if (!string.IsNullOrEmpty(c.BookCoverFileName))
+                                                                {
+                                                                    <img width="40" data-zoom-src="@(Url.Content($"/Books/{c.HashFolder}/{c.BookCoverFileName.Replace("small_", string.Empty)}"))" class="zoom" loading="lazy" src="@(Url.Content($"/Books/{c.HashFolder}/{c.BookCoverFileName}"))" />
+                                                                }
+                                                                else
+                                                                {
+                                                                    <img class="zoom" loading="lazy" width="40" src="@(Url.Content("/Content/Images/notImage.png"))" />
+                                                                }
+                                                            }
+                                                        </td>
+                                                        <td class="l">
+                                                            <a target="_blank" href="@Url.Action("View","TimesMachine",new { @BookId = @c.BookId })">
+                                                                @if (isExrimistStatements)
+                                                                {
+                                                                    <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <i class="fa fa-book" aria-hidden="true"></i>
+                                                                }
+                                                                @c.BookName
+                                                            </a>
+                                                        </td>
+                                                        <td class="l">@c.Inventory</td>
+                                                        <td class="l">@(c.InventoryCollectedBook!=null?c.InventoryCollectedBook:string.Empty)</td>
+                                                        <td class="l"><i class="fa fa-clock-o" aria-hidden="true"></i> @c.DateTimeCreated</td>
+                                                        <td class="l">
+                                                            @{
+                                                                if (c.PageCount.HasValue)
+                                                                {
+                                                                    <span>@c.PageCount.Value</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>0</span>
+                                                                }
+                                                            }
+                                                        </td>
+                                                        @* Эксперт *@
+                                                        <td class="l">@(c?.Username) @(!string.IsNullOrEmpty(c.FirstName)?string.Format("({0})",c.FirstName):string.Empty)</td>
+                                                        <td class="l">
+                                                            @if (!c.Visible)
+                                                            {
+                                                                <span class="badge badge-danger">Скрыта</span>
+                                                            }
+                                                        </td>
+                                                        <td class="l">
+                                                            @{
+                                                                var progress = 0;
+                                                                if (c.PercentWorkDescr.HasValue)
+                                                                {
+                                                                    progress += c.PercentWorkDescr.Value;
+                                                                }
+                                                                if (c.PercentWorkProcessing.HasValue)
+                                                                {
+                                                                    progress += c.PercentWorkProcessing.Value;
+                                                                }
+                                                                if (c.PercentWorkScanner.HasValue)
+                                                                {
+                                                                    progress += c.PercentWorkScanner.Value;
+                                                                }
+                                                                progress = progress / 3;
+                                                            }
+                                                            <div class="progress">
+                                                                <div class="progress-bar progress-bar-@(progress < 100 ? "info" : "success") progress-bar-striped" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: @(string.Format("{0}%", progress))">
+                                                                    @(string.Format("{0}%", progress))
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td class="l">
+                                                            <div class="dropdown">
+                                                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                                                </button>
+                                                                <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                                                                    <a class="dropdown-item" target="_blank" href="@Url.Action("EditorBook", "TimesMachine", new { @BookId = @c.BookId })">Правка</a>
+                                                                    <a class="dropdown-item" target="_blank" href="@Url.Action("View", "TimesMachine", new { @BookId = @c.BookId })">Просмотр</a>
+                                                                    <a class="dropdown-item cb" data-bookId="@c.BookId">Копия</a>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    }
+                                                    }
+                                                    }
+                                                </tbody>
+                                </table>
+                            }
+                            else
+                            {
+                                <div class="alert alert-success" role="alert">
+                                    <h4 class="alert-heading">@(!string.IsNullOrEmpty(tableBooksInfo.Name)?tableBooksInfo.Name:tableBooksInfo.Roles),</h4>
+                                    <p>Вы еще не добавили ни одной книги на сайт. Нажмите на "Новая книга", для открытия формы добавления</p>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="tab-pane" id="wait" role="tabpanel">
+                        @{
+                            if (tableBooksInfo.wait != null && tableBooksInfo.wait.Any())
+                            {
+                                <div class="alert alert-info alert-dismissible" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <strong>Подсказка:</strong> Отображаются те книги, которые имеют состояние "Скрыта"
+                                </div>
+                                <table id="wait_table">
+                                    <thead>
+                                        <tr>
+                                            <th>Id</th>
+                                            <th></th>
+                                            <th>Название (оригинал)</th>
+                                            <th>Инв. №</th>
+                                            <th>Инв. № сборника</th>
+                                            <th>Дата добавления</th>
+                                            <th>Страниц</th>
+                                            <th>Эксперт</th>
+                                            <th>Видимость</th>
+                                            <th>Общий прогресс</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            var groupMonth = tableBooksInfo.wait.GroupBy(m => new { m.DateTimeCreated.Month, m.DateTimeCreated.Year })?.ToList();
+                                            foreach (var i in groupMonth)
+                                            {
+                                                foreach (var c in i)
+                                                {
+                                                    bool isExrimistStatements = c.isExrimistStatements.HasValue && c.isExrimistStatements.Value ? true : false;
+                                                    <tr class="@(isExrimistStatements?"isExrimistStatements":string.Empty)">
+                                                        <td class="l">@c.BookId</td>
+                                                        <td class="l">
+                                                            @{
+                                                                if (!string.IsNullOrEmpty(c.BookCoverFileName))
+                                                                {
+                                                                    <img width="40" data-zoom-src="@(Url.Content($"/Books/{c.HashFolder}/{c.BookCoverFileName.Replace("small_", string.Empty)}"))" class="zoom" loading="lazy" src="@(Url.Content($"/Books/{c.HashFolder}/{c.BookCoverFileName}"))" />
+                                                                }
+                                                                else
+                                                                {
+                                                                    <img class="zoom" loading="lazy" width="40" src="@(Url.Content("/Content/Images/notImage.png"))" />
+                                                                }
+                                                            }
+                                                        </td>
+                                                        <td class="l">
+                                                            <a target="_blank" href="@Url.Action("View","TimesMachine",new { @BookId = @c.BookId })"> 
+                                                                @if(isExrimistStatements)
+                                                                {
+                                                                    <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <i class="fa fa-book" aria-hidden="true"></i>
+                                                                }                                                            
+                                                                @c.BookName
+                                                            </a>
+                                                        </td>
+                                                        <td class="l">@c.Inventory</td>
+                                                        <td class="l">@(c.InventoryCollectedBook!=null?c.InventoryCollectedBook:string.Empty)</td>
+                                                        <td class="l"><i class="fa fa-clock-o" aria-hidden="true"></i> @c.DateTimeCreated</td>
+                                                        <td class="l">
+                                                            @{ 
+                                                                if (c.PageCount.HasValue)
+                                                                {
+                                                                    <span>@c.PageCount.Value</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>0</span>
+                                                                }
+                                                            }
+                                                        </td>
+                                                        @* Эксперт *@
+                                                        <td class="l">@(c?.Username) @(!string.IsNullOrEmpty(c.FirstName)?string.Format("({0})",c.FirstName):string.Empty)</td>
+                                                        <td class="l">
+                                                            @if (c.Visible)
+                                                            {
+                                                                <span class="badge badge-success">Доступна</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge badge-danger">Скрыта</span>
+                                                            }
+                                                        </td>
+                                                        <td class="l">
+                                                            <div class="progress">
+                                                                <div class="progress-bar progress-bar-@(c.ProgressCompleteValue<100 ? "info" : "success") progress-bar-striped" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: @(string.Format("{0}%",c.ProgressCompleteValue))">
+                                                                    @(string.Format("{0}%",c.ProgressCompleteValue))
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td class="l">
+                                                            <a class="round" title="Изменить" target="_blank" href="@Url.Action("EditorBook","TimesMachine",new { @BookId = @c.BookId })"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                        }
+                    </div>
+                    <div class="tab-pane" id="users" role="tabpanel">
+                        @{
+                            if (isSuperAdmin)
+                            {
+                                {
+                                    if (users != null && users.Any())
+                                    {
+                                        <table id="users_table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Id</th>
+                                                    <th>Логин</th>
+                                                    <th>Имя</th>
+                                                    <th>Фамилия</th>
+                                                    <th>Активность</th>
+                                                    <th>Роль</th>
+                                                    <th>Применить</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{
+                                                    foreach (var c in users)
+                                                    {
+                                                        <tr>
+                                                            <td class="l">@c.UserId</td>
+                                                            <td class="l">@c.UserName</td>
+                                                            <td class="l">@c.FirstName</td>
+                                                            <td class="l">@c.LastName</td>
+                                                            <td class="l">
+                                                                @if (c.IsActive)
+                                                                {
+                                                                    <span class="badge badge-success">Активный</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="badge badge-danger">Заблокирован</span>
+                                                                }
+                                                            </td>
+                                                            <td class="l">
+                                                                <select class="form-control" multiple id="roleUser_@c.UserId">
+                                                                    @if (roles != null && roles.Any())
+                                                                    {
+                                                                        foreach (var r in roles)
+                                                                        {
+                                                                            if (c.RolesControl != null && c.RolesControl.Any())
+                                                                            {
+                                                                                var selected = c.RolesControl.Where(g => g.RoleId == r.RoleId)?.FirstOrDefault();
+                                                                                if (selected != null)
+                                                                                {
+                                                                                    <option selected value="@r.RoleId">@r.RoleName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@r.RoleId">@r.RoleName</option>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@r.RoleId">@r.RoleName</option>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                </select>
+                                                            </td>
+                                                            <td>
+                                                                <button class="btn round" onclick="applyRole(@c.UserId)"><span class="fa fa-check"></span></button>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    }
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <link href="~/Content/Select2/select2.min.css?v=@version" rel="stylesheet" />
+    <script src="~/Content/Select2/select2.min.js?v=@version"></script>
+    <script src="~/Content/Zoom/medium-zoom.min.js?v=@version"></script>
+    <script src="~/Content/ControlPanel/ControlPanel.js?v=@version"></script>
+    @* Modal *@
+    <link href="~/Content/Modal/Modal.css?v=@version" rel="stylesheet" />
+</body>
+

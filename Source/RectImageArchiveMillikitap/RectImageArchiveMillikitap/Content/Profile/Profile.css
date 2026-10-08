@@ -1,0 +1,84 @@
+﻿section_profile {
+    display: flex;
+    justify-content: flex-end;
+    width: auto;
+    margin: 0px auto;
+    box-sizing: border-box;
+    position: fixed;
+    z-index: 20;
+    top: 14px;
+    right: 30px;
+}
+
+.profile {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-size: cover;
+}
+
+.flyout-body {
+    padding: 8px;
+    border-radius: 4px;
+    background-color: #404040;
+    position: absolute;
+    color: #fff;
+    cursor: default;
+    font-weight: 400;
+    top: calc(100% + 8px*2);
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.25s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    transform: scale(0.9, 0.9) rotateX( -45deg );
+    opacity: 0;
+    visibility: hidden;
+    transform-origin: calc(100% - 60px/2) top;
+    align-items: flex-start;
+}
+
+    .flyout-body::before {
+        content: "";
+        width: 0;
+        height: 0;
+        border-top: 8px solid transparent;
+        border-bottom: 8px solid var(--primary-color);
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        position: absolute;
+        bottom: 100%;
+        right: calc(60px/2 - 8px);
+    }
+
+    .flyout-body > a {
+        text-decoration: none;
+        white-space: nowrap;
+        color: inherit;
+        text-align: center;
+        padding: 8px 24px;
+        transition: all 0.1s ease-in;
+        border-radius: inherit;
+        width: 100%;
+        display: inherit;
+    }
+
+        .flyout-body > a:not(:last-of-type) {
+            margin-bottom: 8px;
+        }
+
+        .flyout-body > a:hover {
+            background-color: #636363;
+        }
+
+.flyout {
+    position: relative;
+    perspective: 1500px;
+    cursor: pointer;
+    transition: all 0.1s ease-in;
+}
+
+    .flyout.active > .flyout-body {
+        visibility: visible;
+        opacity: 1;
+        transform: scale(1, 1) rotateX(0deg);
+    }

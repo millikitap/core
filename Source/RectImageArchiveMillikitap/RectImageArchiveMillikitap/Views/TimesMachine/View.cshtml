@@ -1,0 +1,1516 @@
+﻿@using System.Collections;
+@using HtmlAgilityPack;
+@{
+    @model RectImageArchiveMillikitap.Models.Books
+    ViewBag.Title = $"{Model.BookName} {ViewBag.Caption}";
+    string folderBookUrl = ViewData["folderBookUrl"] as string;
+    var HasAccess = (bool)ViewData["access"];
+    //сборник сочинений
+    var booksInCollections = ViewData["сollectionDataBook"] as List<RectImageArchiveMillikitap.Models.BooksJson>;
+    //текущий пользователь
+    var currUser = ViewData["currentUser"] as RectImageArchiveMillikitap.Models.User.User;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Locale = ViewData["Translate"] as Hashtable;
+
+    //Тематики
+    var themesList = ViewData["ThemesList"] as List<RectImageArchiveMillikitap.Models.ThemesLanguagesList>;
+    //Типы
+    var typesList = ViewData["TypesList"] as List<RectImageArchiveMillikitap.Models.TypesLanguagesList>;
+    //Коллекции
+    var collectionsList = ViewData["CollectionsList"] as List<RectImageArchiveMillikitap.Models.Collection>;
+
+    string version = "3.8.3";
+}
+
+
+<link href="~/Content/loading.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+<link href="~/dragSlider/css/normalize.css" rel="stylesheet" />
+<link href="~/dragSlider/css/demo.css?v=@version" rel="stylesheet" />
+<link href="~/dragSlider/css/dragdealer.css?v=@version" rel="stylesheet" />
+<link href="~/dragSlider/css/component.css?v=@version" rel="stylesheet" />
+<script src="~/dragSlider/js/modernizr.custom.js"></script>
+<link href="~/Content/Profile/Profile.css?v=@version" rel="stylesheet" />
+<script src="~/Content/Profile/Profile.js?v=@version"></script>
+<script src="~/Content/Bookmark/Bookmark.js?v=@version"></script>
+<script src="~/Toast/toastInit.js"></script>
+@* Modal *@
+<link href="~/Content/Modal/Modal.css?v=@version" rel="stylesheet" />
+@* Loader *@
+<link href="~/Content/Loader/loader.css?v=@version" rel="stylesheet" />
+<script src="~/Content/Loader/loader.js?v=@version"></script>
+@* Share *@
+<script src="https://yastatic.net/es5-shims/0.0.2/es5-shims.min.js"></script>
+<script src="https://yastatic.net/share2/share.js" async></script>
+@*https://codepen.io/microfront/pen/veagoK*@
+@* UserList *@
+<link href="~/Content/Chat/UserList.css?v=@version" rel="stylesheet" />
+@* Feedback *@
+<link href="~/Content/Feedback/Feedback.css?v=@version" rel="stylesheet" />
+
+
+@* Translate JS *@
+<script>
+    var LocaleJs = {};
+    //Представление
+    LocaleJs["Содержимого_нет"] = '@Locale["Содержимого_нет"]';
+    LocaleJs["Статья_изменена_или_удалена"] = '@Locale["Статья изменена или удалена. Пожалуйста, обновите страницу для актуализации фрагмента."]';
+    LocaleJs["Добавлено_в_избранное"] = '@Locale["Добавлено_в_избранное"]';
+    LocaleJs["Статья_удалена_из_избранного"] = '@Locale["Статья_удалена_из_избранного"]';
+    LocaleJs["Поиск_выполнен"] = '@Locale["Поиск_выполнен"]';
+    LocaleJs["Больше_элементов_нет"] = '@Locale["Больше_элементов_нет"]';
+    //Чат
+    LocaleJs["Сообщение_успешно_удалено"] = '@Locale["Сообщение_успешно_удалено"]';
+    LocaleJs["Пользователь"] = '@Locale["Пользователь"]';
+    LocaleJs["успешно_заблокирован"] = '@Locale["успешно_заблокирован"]';
+    LocaleJs["Доступ_к_данной_функции_ограничен_модератором"] = '@Locale["Доступ_к_данной_функции_ограничен_модератором"]';
+    LocaleJs["Спасибо_Ваша_жалоба_принята"] = '@Locale["Спасибо_Ваша_жалоба_принята"]';
+    LocaleJs["Не_удалось_получить_информацию_о_сообщении"] = '@Locale["Не_удалось_получить_информацию_о_сообщении"]';
+    LocaleJs["Нельзя_повторно_подавать_жалобу"] = '@Locale["Нельзя_повторно_подавать_жалобу"]';
+    LocaleJs["Заблокировать_пользователя"] = '@Locale["Заблокировать_пользователя"]';
+    LocaleJs["Удалить_сообщение"] = '@Locale["Удалить_сообщение"]';
+    LocaleJs["Жалоба"] = '@Locale["Жалоба"]';
+    LocaleJs["Ответить"] = '@Locale["Ответить"]';
+    LocaleJs["Инициализация_чата_успешно"] = '@Locale["Инициализация_чата_успешно"]';
+    LocaleJs["Элементы_получены"] = '@Locale["Элементы_получены"]';
+    LocaleJs["Вы_действительно_желаете_отправить_жалобу_на_сообщение"] = '@Locale["Вы_действительно_желаете_отправить_жалобу_на_сообщение"]';
+    LocaleJs["Вы_действительно_желаете_заблокировать_пользователя"] = '@Locale["Вы_действительно_желаете_заблокировать_пользователя"]';
+    LocaleJs["Вы_действительно_желаете_удалить_сообщение"] = '@Locale["Вы_действительно_желаете_удалить_сообщение"]';
+    LocaleJs["Вложить_ссылку_на_страницу"] = '@Locale["Вложить_ссылку_на_страницу"]';
+    LocaleJs["Переход_к_странице_по_ссылке_выполнен"] = '@Locale["Переход_к_странице_по_ссылке_выполнен"]';
+    LocaleJs["Ссылка_на_страницу"] = '@Locale["Ссылка_на_страницу"]';
+</script>
+
+<style>
+    img[usemap] {
+        border: none;
+        height: auto;
+        max-width: 100%;
+    }
+</style>
+
+@* Поделиться *@
+<div id="share" class="modal-overlay">
+    <div class="modal">
+        <a class="close-modal">
+            <svg viewBox="0 0 20 20">
+                <path fill="#000000" d="M15.898,4.045c-0.271-0.272-0.713-0.272-0.986,0l-4.71,4.711L5.493,4.045c-0.272-0.272-0.714-0.272-0.986,0s-0.272,0.714,0,0.986l4.709,4.711l-4.71,4.711c-0.272,0.271-0.272,0.713,0,0.986c0.136,0.136,0.314,0.203,0.492,0.203c0.179,0,0.357-0.067,0.493-0.203l4.711-4.711l4.71,4.711c0.137,0.136,0.314,0.203,0.494,0.203c0.178,0,0.355-0.067,0.492-0.203c0.273-0.273,0.273-0.715,0-0.986l-4.711-4.711l4.711-4.711C16.172,4.759,16.172,4.317,15.898,4.045z"></path>
+            </svg>
+        </a>
+        <div class="modal-content">
+            <div class="caption">@Locale["Поделиться_ссылкой_на_страницу"]</div>
+            <div class="share_row">
+                <div id="modalShare" size="l" data-curtain data-color-scheme="blackwhite" data-more-button-type="long" data-services="vkontakte,facebook,odnoklassniki,telegram,whatsapp"></div>
+            </div>
+            <div class="share_row">
+                <input onclick="copySelectInput(this)" readonly="readonly" type="text" id="modalLinkText" />
+            </div>
+            <div class="caption">
+                @Locale["или"]
+            </div>
+            <div class="caption">@Locale["скопировать_прямую_ссылку_на_изображение"]</div>
+            <div class="share_row">
+                <input onclick="copySelectInput(this)" readonly="readonly" type="text" id="directLinkText" />
+            </div>
+            <div class="caption">
+                @Locale["или"]
+            </div>
+            <div id="qrCode"></div>
+        </div>
+    </div>
+</div>
+
+@* Пользователи онлайн *@
+<div id="usersOnlineTable" class="modal-overlay">
+    <div class="modal">
+        <a class="close-modal">
+            <svg viewBox="0 0 20 20">
+                <path fill="#000000" d="M15.898,4.045c-0.271-0.272-0.713-0.272-0.986,0l-4.71,4.711L5.493,4.045c-0.272-0.272-0.714-0.272-0.986,0s-0.272,0.714,0,0.986l4.709,4.711l-4.71,4.711c-0.272,0.271-0.272,0.713,0,0.986c0.136,0.136,0.314,0.203,0.492,0.203c0.179,0,0.357-0.067,0.493-0.203l4.711-4.711l4.71,4.711c0.137,0.136,0.314,0.203,0.494,0.203c0.178,0,0.355-0.067,0.492-0.203c0.273-0.273,0.273-0.715,0-0.986l-4.711-4.711l4.711-4.711C16.172,4.759,16.172,4.317,15.898,4.045z"></path>
+            </svg>
+        </a>
+        <div class="modal-content">
+            <div class="caption">@Locale["Пользователи_онлайн"]: <span class="usersCounter">0</span></div>
+            <div class="usersOnlineData" id="usersOnlineTableData">
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Записаться в волонтеры *@
+<div id="feedback" class="main">
+    <span onclick="$('#feedback').css('display','none')" class="material-icons closeFeedback">
+        cancel
+    </span>
+    <div class="bio">
+        <h3 class="header">@Locale["Вступление_в_волонтеры"]</h3>
+        <p>
+            @Locale["Мы_приглашаем_всех_желающих"]
+        </p>
+        @Locale["Если_Вы_знаете_такие_языки_как"]
+        <p>
+            @Locale["Если_Вы_получите одобрение"]
+        </p>
+    </div>
+    <div class="logoFeedback">
+        <img class="profile-img" src="@Url.Content("/Content/Images/logo_main.png")" />
+    </div>
+    <div class="contact">
+        <form id="form">
+            <legend class="header">@Locale["Оставьте_заявку"]</legend>
+            <p>
+                @Locale["Напишите_несколько_слов_о_себе"]
+            </p>
+            <fieldset>
+                <label class="material-icons" for="message-input" aria-hidden="true">email</label>
+                <textarea placeholder="@Locale["О_себе"]" id="message-input"></textarea>
+            </fieldset>
+            <fieldset>
+                <button onclick="$('#feedback').css('display', 'none'); toastMess('Спасибо за обратную связь', false);" type="button" id="btn-submit">@Locale["Отправить_заявку"]</button>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+<body class="@(!Model.Visible ? "isBookHide" : string.Empty)">
+    @* Curr user *@
+    @{
+        if (currUser != null)
+        {
+            <input type="hidden" id="UserId" value="@currUser.UserId" />
+            <input type="hidden" id="UserCode" value="@currUser.ActivationCode" />
+            <input type="hidden" id="UserEmail" value="@currUser.Email" />
+            <input type="hidden" id="UserFirstName" value="@(currUser?.FirstName)" />
+            <input type="hidden" id="UserLastName" value="@(currUser?.LastName)" />
+            <script>
+                var userIsAuth = true;
+            </script>
+        }
+        else
+        {
+            <script>
+                var userIsAuth = false;
+            </script>
+        }
+    }
+    <script>
+        @* Loader page *@
+        var loader_number = 4;
+        var preloader_number = 4;
+        @* isEditor || isAdmin || isExpert *@
+        var isHasAccess = false;
+        @{
+            if (HasAccess)
+            {
+                <text>
+                    isHasAccess = true;
+                </text>
+            }
+            else
+            {
+                <text>
+                    isHasAccess = false;
+                </text>
+            }
+        }
+    </script>
+    <div class="preloader-4">
+        <div class="loader-4" title="@Locale["Открытие"]"></div>
+    </div>
+
+    <div class="loader">
+        <h2>@Locale["Пожалуйста_ждите"]</h2>
+        <div class="loader--dot"></div>
+        <div class="loader--dot"></div>
+        <div class="loader--dot"></div>
+        <div class="loader--dot"></div>
+        <div class="loader--dot"></div>
+        <div class="loader--dot"></div>
+        <div class="loader--text"></div>
+    </div>
+    <div id="controlsBtnViewport">
+        <span onclick="rotateLeft()" title="@Locale["Повернуть_налево"]" class="material-icons btn_option BtnViewportControl rotateCtrlView">rotate_left</span>
+        <span onclick="hideZoom()" title="@Locale["Закрыть_окно_увеличения"]" class="material-icons btn_option BtnViewportControl">highlight_off</span>
+        <span onclick="rotateRight()" title="@Locale["Повернуть_направо"]" class="material-icons btn_option BtnViewportControl rotateCtrlView">rotate_right</span>
+    </div>
+    <div class="panel_slide-wrap">
+        <div class="panel_slide">
+            <h3 id="slidingTitle">
+                <span class="material-icons">auto_stories</span><label>@Model.BookName</label>
+                <span id="closeSlidingCtrl" title="@Locale["Скрыть"]" class="material-icons btn_option"> keyboard_arrow_right </span>
+                <span id="likeCtrl" title="@Locale["Добавить_выделенную_статью_в_избранное"]" class="material-icons btn_option"> favorite </span>
+                <span id="fullscreenCtrl" title="@Locale["На_весь_экран"]" class="material-icons btn_option"> open_in_full </span>
+            </h3>
+            <div id="slidingContent"></div>
+        </div>
+        <div id="footerContent">
+            <span id="linkSocFragment" class="r_b ya-share2" data-popup-direction="top" data-curtain data-color-scheme="blackwhite" data-limit="0" data-more-button-type="short" data-services="vkontakte,facebook,odnoklassniki,telegram,whatsapp"></span>
+        </div>
+    </div>
+    @* openseadragon  *@
+    <div id="zoomDocument" class="openseadragon" style="width:100%;height:100%;border:0px;visibility:hidden;position:fixed;z-index: 200;padding-top:58px;"></div>
+    <header id="header" class="codrops-header">
+        <div id="logo" class="news_paper_title">
+            <a href="@Url.Action("Index", "TimesMachine")" title="@Locale["Перейти_на_главную_страницу"]">
+                <img width="55" src="~/Content/Images/logo_main.png?v=@version" class="custom-logo" srcset="~/Content/Images/logo_main.png?v=@version" sizes="(max-width: 300px) 100vw, 300px">
+            </a>
+        </div>
+        <div class="flex_c">
+            @if (Model != null)
+            {
+                if (Model.isRtl.HasValue && Model.isRtl.Value)
+                {
+                    <span class="material-icons btn_option stepBtn" data-pos="-"> keyboard_arrow_left </span>
+                    <span>@Locale["из"]</span>
+                    <strong><span id="allPages" class="pageNumber">0</span></strong>
+                    <span> - </span>
+                    <strong>
+                        <span title="@Locale["Двойной_клик_для_редактирования"]" id="pageNumber" class="pageNumber">0</span>
+                    </strong>
+                    <span class="material-icons btn_option stepBtn" data-pos="+"> keyboard_arrow_right </span>
+                    <text>
+                        <script>
+                            var isRtl = true;
+                        </script>
+                    </text>
+                }
+                else
+                {
+                    <span class="material-icons btn_option stepBtn" data-pos="-"> keyboard_arrow_left </span>
+                    <strong>
+                        <span title="@Locale["Двойной_клик_для_редактирования"]" id="pageNumber" class="pageNumber">0</span>
+                    </strong>
+                    <span>@Locale["из"]</span>
+                    <strong><span id="allPages" class="pageNumber">0</span></strong>
+                    <span class="material-icons btn_option stepBtn" data-pos="+"> keyboard_arrow_right </span>
+                    <text>
+                        <script>
+                            var isRtl = false;
+                        </script>
+                    </text>
+                }
+            }
+            @if (booksInCollections != null && booksInCollections.Any())
+            {
+                <div class="collections">
+                    <select id="changeCollectionSelect" title="@Locale["Переключиться_на_другую_часть_сборника"]" class="collectionSelect">
+                        @{
+                            int i = 1;
+                            foreach (var c in booksInCollections)
+                            {
+                                if (c.BookId == Model.BookId)
+                                {
+                                    <option style="@(!c.Visible.Value ? "display:none" : string.Empty)" data-id="@c.BookId" selected>
+                                        @Locale["Часть"] @i @(string.Format("({0} {1})", c.PageCount, Locale["стр"]))
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option style="@(!c.Visible.Value ? "display:none" : string.Empty)" data-id="@c.BookId">
+                                        @Locale["Часть"] @i @(string.Format("({0} {1})", c.PageCount, Locale["стр"]))
+                                    </option>
+                                }
+                                i++;
+                            }
+                        }
+                    </select>
+                </div>
+            }
+            <span id="layersCtrl" title="@Locale["Показать_Скрыть_слои"]" class="material-icons btn_option" style="display:none;"> layers </span>
+            @{
+                if (HasAccess)
+                {
+                    <a title="@Locale["Редактировать_книгу"]" href="@Url.Action("EditorBook", "TimesMachine", new { @BookId = Model.BookId })"><span class="material-icons btn_option"> edit_note </span></a>
+                }
+            }
+            @if (!string.IsNullOrEmpty(Model.PdfFile))
+            {
+                <a title="@Locale["Одним_файлом"]" href="~/Books/@Model.HashFolder/@Model.PdfFile"><span class="material-icons btn_option"> picture_as_pdf </span></a>
+            }
+            <button class="slider-switch" style="display:none">Switch view</button>
+        </div>
+    </header>
+    <div class="container mt-5" id="bookInfoForm" style="display:none;">
+        <div class="row">
+            <div class="col-12">
+                <article class="blog-card-info">
+                    <div class="blog-card-info__background">
+                        <div class="card__background--wrapper">
+                            @{
+                                string coverImg = Url.Content("/Content/Images/notImage.png");
+                                if (!string.IsNullOrEmpty(Model.BookCoverFileName))
+                                {
+                                    coverImg = string.Format("/Books/{0}/{1}", Model.HashFolder, Model.BookCoverFileName.Replace("small_", string.Empty));
+                                }
+                            }
+                            <div class="card__background--main" style="background-image: url('@coverImg');">
+                                <div class="card__background--layer"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="blog-card-info__info">
+                        <h3>@Model.BookName</h3>
+
+                        @* Содержание рукописи *@
+                        <div class="accordion form-group">
+                            <div class="accordion__item">
+                                <div class="accordion__title">
+                                    <div class="accordion__arrow"><span class="accordion__arrow-item ">+</span></div>
+                                    <span class="accordion__title-text">@Locale["Содержание_рукописи"]</span>
+                                </div>
+                                <div class="accordion__content" style="display: none;">
+                                    <div class="caption">
+                                        <span>@Locale["Название_на_разных_языках"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div><span class="title">@Locale["Оригинал"]:</span> @Model.BookName</div>
+                                        @{
+                                            if (Model.Attributes != null)
+                                            {
+                                                <div><span class="title">ru: </span> @Model.Attributes.NameOfBookCyrillic</div>
+                                                <div><span class="title">en: </span> @Model.Attributes.NameOfBookEnglish</div>
+                                                <div><span class="title">ar: </span> @Model.Attributes.NameOfBookArabic</div>
+                                            }
+                                            else
+                                            {
+                                                <div><span class="title">ru: </span>-</div>
+                                                <div><span class="title">en: </span>-</div>
+                                                <div><span class="title">ar: </span>-</div>
+                                            }
+                                        }
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Описание_книги"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <span>
+                                            @{
+                                                if (!string.IsNullOrEmpty(Model.Description))
+                                                {
+                                                    @Model.Description
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            }
+                                        </span>
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Тип_на_разных_языках"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        @{
+                                            if (Model.Attributes != null && Model.Attributes.TypesLanguagesListId.HasValue)
+                                            {
+                                                var entityType = typesList?.Where(c => c.TypesLanguagesListId == Model.Attributes.TypesLanguagesListId.Value)?.FirstOrDefault();
+                                                if (entityType != null)
+                                                {
+                                                    <div><span class="title">ru: </span> @entityType.DescriptionTypeRussian</div>
+                                                    <div><span class="title">en: </span> @entityType.DescriptionTypeEnglish</div>
+                                                    <div><span class="title">ar: </span> @entityType.DescriptionTypeArabic</div>
+                                                }
+                                                else
+                                                {
+                                                    <div><span class="title">ru: </span>-</div>
+                                                    <div><span class="title">en: </span>-</div>
+                                                    <div><span class="title">ar: </span>-</div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <div><span class="title">ru: </span>-</div>
+                                                <div><span class="title">en: </span>-</div>
+                                                <div><span class="title">ar: </span>-</div>
+                                            }
+                                        }
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Тема_на_разных_языках"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        @{
+                                            if (Model.Attributes != null && Model.Attributes.ThemesLanguagesListId.HasValue)
+                                            {
+                                                var entityTheme = themesList?.Where(c => c.ThemesLanguagesListId == Model.Attributes.ThemesLanguagesListId.Value)?.FirstOrDefault();
+                                                if (entityTheme != null)
+                                                {
+                                                    <div><span class="title">ru: </span> @entityTheme.DescriptionThemeRussian</div>
+                                                    <div><span class="title">en: </span> @entityTheme.DescriptionThemeEnglish</div>
+                                                    <div><span class="title">ar: </span> @entityTheme.DescriptionThemeArabic</div>
+                                                }
+                                                else
+                                                {
+                                                    <div><span class="title">ru: </span>-</div>
+                                                    <div><span class="title">en: </span>-</div>
+                                                    <div><span class="title">ar: </span>-</div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <div><span class="title">ru: </span>-</div>
+                                                <div><span class="title">en: </span>-</div>
+                                                <div><span class="title">ar: </span>-</div>
+                                            }
+                                        }
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Коллекция"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div>
+                                            @{
+                                                if (Model.Attributes != null && Model.Attributes.CollectionId.HasValue)
+                                                {
+                                                    var entityCollection = collectionsList?.Where(c => c.CollectionId == Model.Attributes.CollectionId.Value)?.FirstOrDefault();
+                                                    if (entityCollection != null)
+                                                    {
+                                                        <div>@entityCollection.CollectionName</div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div>-</div>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <div>-</div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Теги"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div>
+                                            @if (Model.Attributes != null)
+                                            {
+                                                if (!string.IsNullOrEmpty(Model.Tags))
+                                                {
+                                                    <span>@Model.Tags</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* Происхождение *@
+                        <div class="accordion form-group">
+                            <div class="accordion__item">
+                                <div class="accordion__title">
+                                    <div class="accordion__arrow"><span class="accordion__arrow-item ">+</span></div>
+                                    <span class="accordion__title-text">@Locale["Происхождение"]</span>
+                                </div>
+                                <div class="accordion__content" style="display: none;">
+                                    <div class="caption">
+                                        <span>@Locale["Дата_на_мусульманском_в_описательном виде"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div>
+                                            @if (Model.Attributes != null)
+                                            {
+                                                if (!string.IsNullOrEmpty(Model.Attributes.ArabicDateText))
+                                                {
+                                                    <span>@Model.Attributes.ArabicDateText</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Дата_переписки"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div>
+                                            @if (Model.Attributes != null)
+                                            {
+                                                if (Model.Attributes.DateOfCorrespondenceGregorianCalendar.HasValue)
+                                                {
+                                                    <span>@Model.Attributes.DateOfCorrespondenceGregorianCalendar.Value.ToString("dd-MM-yyyy")</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Переписчик"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        @{
+                                            if (Model.Attributes != null)
+                                            {
+                                                <div><span class="title">ru: </span> @Model.Attributes.CorrespondenceCyrillic</div>
+                                                <div><span class="title">en: </span> @Model.Attributes.CorrespondenceEnglish</div>
+                                                <div><span class="title">ar: </span> @Model.Attributes.CorrespondenceArabic</div>
+                                            }
+                                            else
+                                            {
+                                                <div><span class="title">-</span></div>
+                                            }
+                                        }
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Место_переписки"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        @{
+                                            if (Model.Attributes != null)
+                                            {
+                                                <div><span class="title">ru: </span> @Model.Attributes.PlaceCorrespondenceRussian</div>
+                                                <div><span class="title">en: </span> @Model.Attributes.PlaceCorrespondenceEnglish</div>
+                                                <div><span class="title">ar: </span> @Model.Attributes.PlaceCorrespondenceArabic</div>
+                                                <div><span class="title">tat: </span> @Model.Attributes.PlaceCorrespondenceTatar</div>
+                                                <div><span class="title"><span class="material-icons"> gps_fixed </span> </span> @Model.Attributes.PlaceCorrespondenceLat,@Model.Attributes.PlaceCorrespondenceLon</div>
+                                            }
+                                            else
+                                            {
+                                                <div><span class="title">-</span></div>
+                                            }
+                                        }
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Дата_переписки"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div>
+                                            @if (Model.Attributes != null)
+                                            {
+                                                if (Model.Attributes.DateOfCorrespondenceGregorianCalendar.HasValue)
+                                                {
+                                                    <span>
+                                                        @Model.Attributes.DateOfCorrespondenceGregorianCalendar.Value.ToString("dd-MM-yyyy")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Населенный_пункт_откуда_доставлена"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div><span class="title">ru: </span> @Model.Attributes.LocalityOffDeliveryRussian</div>
+                                        <div><span class="title">en: </span> @Model.Attributes.LocalityOffDeliveryEnglish</div>
+                                        <div><span class="title">tat: </span> @Model.Attributes.LocalityOffDeliveryTatar</div>
+                                        <div><span class="title"><span class="material-icons"> gps_fixed </span> </span> @Model.Attributes.LocalityOffDeliveryLat,@Model.Attributes.LocalityOffDeliveryLon</div>
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Регион"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div>
+                                            @if (Model.Attributes != null)
+                                            {
+                                                if (Model.Attributes.RegionsId.HasValue)
+                                                {
+                                                    <span>
+                                                        @Model.Attributes.Regions.RegionName
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* Информация о носителе *@
+                        <div class="accordion form-group">
+                            <div class="accordion__item">
+                                <div class="accordion__title">
+                                    <div class="accordion__arrow"><span class="accordion__arrow-item ">+</span></div>
+                                    <span class="accordion__title-text">@Locale["Информация_о_носителе"]</span>
+                                </div>
+                                <div class="accordion__content" style="display: none;">
+                                    <div class="caption">
+                                        <span>@Locale["Инвентарный_номер_книги"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div>
+                                            @if (Model.Attributes != null)
+                                            {
+                                                if (!string.IsNullOrEmpty(Model.Attributes.Inventory))
+                                                {
+                                                    <div>
+                                                        <span>
+                                                            @Model.Attributes.Inventory
+                                                        </span>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div><span>-</span></div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Ширина_Высота"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div>
+                                            @if (Model.Attributes != null)
+                                            {
+                                                <div><span>@Model.Attributes.Width.Value / @Model.Attributes.Height.Value</span></div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Количество_страниц"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div>
+                                            @if (Model.Attributes != null)
+                                            {
+                                                <div><span>@Model.Attributes.PageCount</span></div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Характеристика_физических_параметров_бумаги"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div>
+                                            @if (Model.Attributes != null)
+                                            {
+                                                if (!string.IsNullOrEmpty(Model.Attributes.ParametersPaper))
+                                                {
+                                                    <div><span>@Model.Attributes.ParametersPaper</span></div>
+                                                }
+                                                else
+                                                {
+                                                    <div><span>-</span></div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Состояние"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div>
+                                            @if (Model.Attributes != null)
+                                            {
+                                                if (Model.Attributes.StatesId.HasValue)
+                                                {
+                                                    <div><span>@Model.Attributes.States.StateDescription</span></div>
+                                                }
+                                                else
+                                                {
+                                                    <div><span>-</span></div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Дата_окончания_работ_по_обработке"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div>
+                                            @if (Model.Attributes != null)
+                                            {
+                                                if (Model.Attributes.EndDateScanProcessing.HasValue)
+                                                {
+                                                    <div><span>@Model.Attributes.EndDateScanProcessing.Value.ToString("dd-MM-yyyy")</span></div>
+                                                }
+                                                else
+                                                {
+                                                    <div><span>-</span></div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="caption">
+                                        <span>@Locale["Дата_окончания_работ_по_описанию"]:</span>
+                                    </div>
+                                    <div class="description">
+                                        <div>
+                                            @if (Model.Attributes != null)
+                                            {
+                                                if (Model.Attributes.EndDateDescriptionProcessing.HasValue)
+                                                {
+                                                    <div><span>@Model.Attributes.EndDateDescriptionProcessing.Value.ToString("dd-MM-yyyy")</span></div>
+                                                }
+                                                else
+                                                {
+                                                    <div><span>-</span></div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* Служебная информация *@
+                        @if (HasAccess)
+                        {
+                            <div class="accordion form-group">
+                                <div class="accordion__item">
+                                    <div class="accordion__title">
+                                        <div class="accordion__arrow"><span class="accordion__arrow-item ">+</span></div>
+                                        <span class="accordion__title-text">@Locale["Служебная_информация"]</span>
+                                    </div>
+                                    <div class="accordion__content" style="display: none;">
+                                        <div class="caption">
+                                            <span>@Locale["Дата_добавления_на_сайт"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @Model.DateTimeCreated.Value.ToString("dd-MM-yyyy")
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Директория_на_сервере"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (!string.IsNullOrEmpty(Model.HashFolder))
+                                                {
+                                                    <div><span class="title"><span class="material-icons"> folder </span> </span> @Model.HashFolder</div>
+                                                }
+                                                else
+                                                {
+                                                    <div><span class="title"><span class="material-icons"> folder </span> </span> - </div>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Url_адрес_вложения"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (!string.IsNullOrEmpty(Model.PdfFile))
+                                                {
+                                                    <div><span class="title"> @string.Format("/Books/{0}/{1}", Model.HashFolder, Model.PdfFile)</span></div>
+                                                }
+                                                else
+                                                {
+                                                    <div><span class="title">-</span> -</div>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Эксперт"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                <div><span class="title"> UserId: @Model.UserExpert.UserId </span> </div>
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Кто_добавил"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                <div><span class="title"> UserId: @Model.UserIdCreator.UserId </span> </div>
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Направление_контента"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.isRtl.HasValue)
+                                                {
+                                                    if (Model.isRtl.Value)
+                                                    {
+                                                        <div><span class="title"> <span class="material-icons"> west </span> </span> </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span class="title"> <span class="material-icons"> east </span> </span> </div>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <div><span class="title"> <span class="material-icons"> east </span> </span> </div>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Дата_начала_сканирования"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.Attributes != null)
+                                                {
+                                                    if (Model.Attributes.StartDateScan.HasValue)
+                                                    {
+                                                        <div><span>@Model.Attributes.StartDateScan.Value.ToString("dd-MM-yyyy")</span></div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span>-</span></div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Дата_завершения_сканирования"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.Attributes != null)
+                                                {
+                                                    if (Model.Attributes.EndDateScan.HasValue)
+                                                    {
+                                                        <div><span>@Model.Attributes.EndDateScan.Value.ToString("dd-MM-yyyy")</span></div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span>-</span></div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["ФИО_сканировщика"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.Attributes != null)
+                                                {
+                                                    if (!string.IsNullOrEmpty(Model.Attributes.FIOScanner))
+                                                    {
+                                                        <div><span>@Model.Attributes.FIOScanner</span></div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span>-</span></div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Дата_начала_работ_по_обработке"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.Attributes != null)
+                                                {
+                                                    if (Model.Attributes.EndDateScanProcessing.HasValue)
+                                                    {
+                                                        <div><span>@Model.Attributes.StartDateScanProcessing.Value.ToString("dd-MM-yyyy")</span></div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span>-</span></div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["ФИО_обработчика"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.Attributes != null)
+                                                {
+                                                    if (!string.IsNullOrEmpty(Model.Attributes.FIOProcessing))
+                                                    {
+                                                        <div><span>@Model.Attributes.FIOProcessing</span></div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span>-</span></div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Дата_начала_работ_по_описанию"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.Attributes != null)
+                                                {
+                                                    if (Model.Attributes.StartDateDescriptionProcessing.HasValue)
+                                                    {
+                                                        <div><span>@Model.Attributes.StartDateDescriptionProcessing.Value.ToString("dd-MM-yyyy")</span></div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span>-</span></div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Комментарий_эксперта"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.Attributes != null)
+                                                {
+                                                    if (!string.IsNullOrEmpty(Model.Attributes.CommentExpert))
+                                                    {
+                                                        <div><span>@Model.Attributes.CommentExpert</span></div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span>-</span></div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Комментарий_редактора"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.Attributes != null)
+                                                {
+                                                    if (!string.IsNullOrEmpty(Model.Attributes.CommentEditor))
+                                                    {
+                                                        <div><span>@Model.Attributes.CommentEditor</span></div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span>-</span></div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Процент_работы_по_сканированию"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.Attributes != null)
+                                                {
+                                                    if (Model.Attributes.PercentWorkScanner.HasValue)
+                                                    {
+                                                        <div><span>@string.Format("{0}%", Model.Attributes.PercentWorkScanner)</span></div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span>0%</span></div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Процент_работы_по_обработке"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.Attributes != null)
+                                                {
+                                                    if (Model.Attributes.PercentWorkProcessing.HasValue)
+                                                    {
+                                                        <div><span>@string.Format("{0}%", Model.Attributes.PercentWorkProcessing)</span></div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span>0%</span></div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Процент_работы_по_описанию"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.Attributes != null)
+                                                {
+                                                    if (Model.Attributes.PercentWorkDescr.HasValue)
+                                                    {
+                                                        <div><span>@string.Format("{0}%", Model.Attributes.PercentWorkDescr)</span></div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span>0%</span></div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Инвентарный_номер_для_группировки_в_сборник"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.Attributes != null)
+                                                {
+                                                    if (!string.IsNullOrEmpty(Model.Attributes.InventoryCollectedBook))
+                                                    {
+                                                        <div><span>№ @Model.Attributes.InventoryCollectedBook</span></div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span>-</span></div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Содержит_сведения_экстремистские"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.Attributes != null)
+                                                {
+                                                    if (Model.Attributes.isExrimistStatements.HasValue)
+                                                    {
+                                                        if (Model.Attributes.isExrimistStatements.Value)
+                                                        {
+                                                            <div><span class="material-icons" style="color:#ef4a4f;"> warning_amber </span>+</div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <div><span>-</span></div>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span> -</span></div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <span>@Locale["Описательное_поле_где_именно_находится_экстримистское_содержние"]:</span>
+                                        </div>
+                                        <div class="description">
+                                            <div>
+                                                @if (Model.Attributes != null)
+                                                {
+                                                    if (!string.IsNullOrEmpty(Model.Attributes.exrimistStatementsText))
+                                                    {
+                                                        if (Model.Attributes.isExrimistStatements.Value)
+                                                        {
+                                                            <div><span>@Model.Attributes.exrimistStatementsText</span></div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <div><span>-</span></div>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <div><span> -</span></div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p>
+                                <a id="closeBookForm" class="btn-info btn-info--with-icon">
+                                    @Locale["Закрыть"]
+                                </a>
+                            </p>
+                        }
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="overlay" class="overlay" style="display:none;">
+            <div class="info">
+                <h2>@Locale["Информация"]</h2>
+                <span class="info-drag">@Locale["Переключение_жестом"]</span>
+                <span class="info-keys">@Locale["Стрелки_для_навигации"]</span>
+                <span class="info-switch">@Locale["Переключение_режима"]</span>
+                <button>@Locale["Приступить_к_просмотру"]</button>
+            </div>
+        </div>
+        @{
+            bool isExrimistStatements = Model.Attributes != null && Model.Attributes.isExrimistStatements.HasValue ? Model.Attributes.isExrimistStatements.Value : false;
+        }
+        <div id="slideshow" class="dragslider @(isExrimistStatements?"isExrimistStatements":string.Empty)">
+            @{
+                if (!Model.Visible && !HasAccess)
+                {
+                    <div class="noAccess" role="alert">
+                        <span class="material-icons">visibility_off</span> @Locale["Данная_книга_скрыта_от_просмотра"]
+                    </div>
+                }
+                else
+                {
+                    @Html.Hidden("bookId", Model.BookId, new { @id = "bookId" })
+                    <section class="img-dragger img-dragger-large dragdealer">
+                        <div class="handle">
+                            @{
+                                if (Model != null && Model.Pages != null && Model.Pages.Any())
+                                {
+                                    int it = 1;
+                                    if (Model.isRtl.HasValue && Model.isRtl.Value)
+                                    {
+                                        Model.Pages = Model.Pages.OrderByDescending(c => c.Id)?.ToList();
+                                    }
+                                    foreach (var p in Model.Pages)
+                                    {
+                                        <div class="slide" id="page_@p.Id">
+                                            <div class="img-wrap">
+                                                <div class="ctrView">
+                                                    @{
+                                                        if (HasAccess)
+                                                        {
+                                                            <span id="editCtrl" onclick="navigateToEditor(@Model.BookId,@p.Id); return;" title="@Locale["Редактировать"]" class="material-icons btn_option"> mode_edit </span>
+                                                        }
+                                                    }
+                                                    <span id="fullScreenCtrl" onclick="zoomIn()" title="@Locale["Увеличить"]" class="material-icons btn_option"> fullscreen </span>
+                                                </div>
+                                                @{
+                                                    bool isHaveRects = p.RectAreasViewer != null && p.RectAreasViewer.Any();
+                                                    string pid = string.Empty;
+                                                    if (isHaveRects)
+                                                    {
+                                                        pid = "usemap=" + string.Format("#img_{0}", p.Id);
+                                                    }
+                                                }
+                                                <img data-i="@it" data-pgId="@p.Id" loading="lazy" src="~/Content/Images/loading.gif" class="lazy" @pid data-src="@(folderBookUrl+"//"+@p.FileName)" alt="@p.Title" />
+                                                <map name="img_@p.Id">
+                                                    @{
+                                                        if (isHaveRects)
+                                                        {
+                                                            HtmlDocument doc = new HtmlDocument();
+                                                            int i = 1;
+                                                            foreach (var r in p.RectAreasViewer)
+                                                            {
+                                                                doc.LoadHtml(r.RectForViewerSVG);
+                                                                string htmlRectRes = string.Empty;
+                                                                HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes("//area");
+                                                                if (nodes != null && nodes.Any())
+                                                                {
+                                                                    foreach (var n in nodes)
+                                                                    {
+                                                                        string shape = n.Attributes["shape"]?.Value;
+                                                                        string coords = n.Attributes["coords"]?.Value;
+                                                                        string joinAreaResult = string.Format("<area class=\"viewAreaEl\" data-viewerId=\"{0}\" data-pagesId=\"{1}\" shape=\"{2}\"  coords=\"{3}\" originalCoords=\"{3}\"/>", r.RectAreasViewerId, r.PagesId, shape, coords);
+                                                                        htmlRectRes += joinAreaResult;
+                                                                    }
+                                                                }
+
+                                                                @Html.Raw(htmlRectRes)
+                                                                i++;
+                                                            }
+                                                        }
+                                                    }
+                                                </map>
+                                            </div>
+                                            <div class="descrSlide">@p.Title</div>
+                                        </div>
+                                        it++;
+                                    }
+                                }
+                            }
+                        </div>
+                    </section>
+                }
+            }
+            @* Волонтерство *@
+            <button class="buttonFeedback" type="button">
+                <span class="material-icons">groups</span> @Locale["Стать_волонтером"]
+            </button>
+            @* Поделиться *@
+            <span id="shareInViewCtrl" onclick="shareMainInit()" title="@Locale["Поделиться_ссылкой_на_страницу"]" class="material-icons btn_option linkInView"> share </span>
+            @* О книге *@
+            <div class="fork-ribbon-wrapper red fixed" id="bookInfoBtn">
+                <div class="fork-ribbon-border"></div>
+                <div class="fork-ribbon-container">
+                    <div class="fork-ribbon">
+                        <div class="fork-ribbon-content">
+                            <a href="#">
+                                @Locale["О_книге"]
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/imageArea/jquery-1.10.2.min.js"></script>
+    <script src="~/dragSlider/js/dragdealer.js?v=@version"></script>
+    <script src="~/dragSlider/js/classie.js?v=@version"></script>
+    <script src="~/dragSlider/js/dragslideshow.js?v=@version"></script>
+
+    @* HightLight rect on images *@
+    <link href="~/imageArea/trifecta/map-trifecta.css?v=@version" rel="stylesheet" />
+    <script src="~/imageArea/trifecta/jquery.map-trifecta.js?v=@version"></script>
+    <script src="~/dragSlider/js/jquery.jmap.min.js"></script>
+    <link href="~/Toast/jquery.toast.css?v=@version" rel="stylesheet" />
+    <script src="~/Toast/jquery.toast.js?v=@version"></script>
+    @* Generate QrCode *@
+    <script src="~/Content/jQuery_qrcode/JQuery_qrcode.js"></script>
+    <script src="~/Scripts/View/View.js?v=@version"></script>
+    <script src="~/Content/LazyImg/lazyImg.js?v=@version"></script>
+    @* Script https://openseadragon.github.io/openseadragon/openseadragon.min.js *@
+    @* https://openseadragon.github.io/examples/ui-overlays/ *@
+    <script src="~/Content/OpenSeadragon/openseadragon.js?v=@version"></script>
+    <script src="~/Content/OpenSeadragon/openseadragon-svg-overlay.js?v=@version"></script>
+    <script src="~/Scripts/d3js/d3.v5.min.js"></script>
+
+    @* SignalR *@
+    <script src="~/Scripts/jquery.signalR-2.4.2.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script src="~/Hubs/js/utilSignalR.js?v=@version"></script>
+
+    @* EmojiPicker *@
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.css" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.js"></script>
+
+    @{
+        var customAttrStyle = (RectImageArchiveMillikitap.Models.CustomStyleAppClass)ViewData["CSS"];
+        if (customAttrStyle != null)
+        {
+            <text>
+                <style>
+                    @(customAttrStyle.OtherPagesCSS)
+                </style>
+            </text>
+        }
+    }
+    <input type="hidden" id="finderSelectedFragmentColor" value="@(System.Configuration.ConfigurationManager.AppSettings["FinderSelectedFragmentColor"])" />
+</body>
+
+
+<div class="bottom_drawer">
+    <div class="header_bar">
+        <span class="usersOnline">
+            <span class="material-icons"> people_alt </span>  @Locale["Сейчас_читают"]: <span class="usersCounter">0</span>
+        </span>
+        <button class="create">
+            <span id="newNotify"></span>
+            <span class="material-icons">
+                question_answer
+            </span> @Locale["Дискуссия"]
+        </button>
+    </div>
+    <div class="body_area">
+        <!-- Comments -->
+        <div class="comments">
+            <div class="comment-body" id="chatMessages">
+                <div class="toTopChat">
+                    <span onclick="getLastMessageChat(false)" title="@Locale["Загрузить_предыдущие_60_сообщений"]" class="material-icons toTopChatBtn">
+                        update
+                    </span>
+                </div>
+                <div id="historyMessages">
+
+                </div>
+                <span title="@Locale["К_последним_сообщениям"]" class="material-icons toBottomChat">
+                    arrow_circle_down
+                </span>
+            </div>            
+            <div class="comment-box add-comment">
+                <span class="commenter-name">
+                    <div class="answer_messageIcon">
+                        <span class="material-icons">
+                            cancel
+                        </span>
+                    </div>
+                    <textarea name="comment" placeholder="@Locale["Текст_сообщения"]"></textarea>
+                    <span id="sendMessage" class="material-icons">
+                        send
+                    </span>
+                </span>
+                <div id="isWriteMessageView">
+                    <span id="isWriteMessagePencilAnim" class="material-icons">edit</span>
+                    @* Пользователи, которые набирают текст *@
+                    <div id="isWriteMessageViewUsers">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var audio = null;
+    function playNotify(url) {
+        audio = document.createElement('audio');
+        audio.style.display = "none";
+        audio.src = url;
+        audio.autoplay = true;
+        audio.onended = function () {
+            audio.remove();
+            audio = null;
+        };
+        document.body.appendChild(audio);
+    }
+
+    function newMessageNotify() {
+        $('#newNotify').show();
+    }
+
+    var isAnswer = false, idMessageAnswer = null;
+    function replyMessage(el) {
+        isAnswer = true;
+        var dataId = $(el).attr('data-id');
+        idMessageAnswer = dataId;
+        var mess = $('#mess_' + dataId).find('p:first').text();
+        $('.emojionearea-editor').attr('placeholder', '@Locale["Ответ_на_сообщение"] ' + mess);
+        $('.emojionearea-editor').addClass('answerChat');
+        $('.answer_messageIcon').show();
+        $('.emojionearea-editor').focus();
+    }
+
+    function clearChat() {
+        isAnswer = false;
+        idMessageAnswer = null;
+        $('[name="comment"]').val('');
+        $('.emojionearea-editor').empty();
+        $('.emojionearea-editor').attr('placeholder', '@Locale["Текст_сообщения"]');
+        $('.answer_messageIcon').hide();
+        $('.emojionearea-editor').removeClass('answerChat');
+        //Очистка пред-его вложения
+        var haveAttachLink = $('.emojionearea #attachLink');
+        if (haveAttachLink.length > 0) {
+            $(haveAttachLink).remove();
+        }
+    }
+
+    var inBottomScrollChat = true;
+    function bindScrollChatWnd() {
+        $('#chatMessages').bind('scroll', function () {
+            if ($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
+                inBottomScrollChat = true;
+                $('#newNotify').hide();
+            }
+            else {
+                inBottomScrollChat = false;
+            }
+            toBottomVisible(!inBottomScrollChat);
+        });
+    }
+
+    function toBottomVisible(f) {
+        var obj = $('.toBottomChat');
+        if (f) {
+            $(obj).css('display', 'flex');
+        }
+        else {
+            $(obj).css('display', 'none');
+        }
+    }
+
+    function scrollChatToBottom() {
+        $('.toBottomChat').hide();
+        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+        if ($('.bottom_drawer .body_area').css('display') == 'block' && inBottomScrollChat) {
+            $('#newNotify').hide();
+        }
+    }
+
+    function scrollChatToTop() {
+        $('.toBottomChat').hide();
+        $('#chatMessages').animate({ scrollTop: 0 }, "slow");
+    }
+
+    function offsetChat() {
+        if (inBottomScrollChat) {
+            scrollChatToBottom();
+        }
+    }
+
+    function onlineUsersListShow() {
+        console.log('show table users online');
+    }
+
+    function onlineUsersInit() {
+        $('.usersOnline').on('click', function () {
+            onlineUsersListShow();
+        });
+    }
+
+    function initButtonFeedback() {
+        $('.buttonFeedback').on('click', function () {
+            $('#feedback').css('display', 'flex');
+        });
+    }
+    
+    $(document).ready(function () {
+        initButtonFeedback();
+        var chatInput = $('[name="comment"]');        
+        $(chatInput).emojioneArea({
+            recentEmojis: false,
+            events: {
+                keyup: function (editor, event) {
+                    if (event.keyCode == 13 && event.shiftKey) {
+                        $('#sendMessage').click();                       
+                    }
+                    //Отображение набора текста
+                    isWriteMessage();
+                },
+                onLoad: function () {
+                    $('.emojionearea-button').append('<span id="attach" class="material-icons" aria-hidden="true" title="' + LocaleJs["Вложить_ссылку_на_страницу"] +'">add_link</span>');
+                    $('.add-comment #attach').on('click', function () {
+                        //Очистка пред-его вложения
+                        var haveAttachLink = $('.emojionearea #attachLink');
+                        if (haveAttachLink.length > 0) {
+                            $(haveAttachLink).remove();
+                        }
+                        //Вложение (Ссылка на тек. страницу)
+                        var imgCurrent = $('.slide.current').find('img:first');
+                        if (imgCurrent != null && imgCurrent.length > 0) {
+                            var pageId = $(imgCurrent).attr('data-pgid');
+                            updateUrlParamInView(pageId);
+                        }
+                        var pageIdLink = parseInt(getUrlParameter('pageId'));
+                        if (pageIdLink != null && pageIdLink != undefined) {
+                            var messageBodyContainer = $('.emojionearea');
+                            var pageNumber = $('#pageNumber').html();
+                            $(messageBodyContainer).append('<div data-pageId="' + pageIdLink + '" id="attachLink"><span onclick="$('+"'#attachLink'"+').remove()" id="removeAttachLink" class="material-icons"> close </span><span style="padding-left: 10px;">Ссылка на страницу №' + pageNumber+'</span></div>');
+                        }
+                        return false;
+                    });
+                }
+            }
+        })         
+        $('.create').click(function () {
+            $('.body_area').slideToggle('fast', 'swing', function () {                
+                scrollChatToBottom();
+                var display = $(this).css('display');
+                if (display == 'block') {
+                    getLastMessageChat(false);
+                    $('#newNotify').hide();
+                }
+                else {
+
+                }
+            });
+        });
+        $('#sendMessage').on('click', function () {
+            var messageText = $('.emojionearea-editor').html();
+            if (messageText != '' && messageText != ' ') {
+                send(messageText);
+            }
+            else {
+                toastMess('@Locale["Введите_текст_сообщения_и_повторите_попытку"]', true);
+            }
+        });
+        $('.answer_messageIcon').on('click', function () {
+            clearChat();
+        });
+        $('.toBottomChat').on('click', function () {
+            scrollChatToBottom();
+        });
+        onlineUsersListShow();
+    });
+</script>

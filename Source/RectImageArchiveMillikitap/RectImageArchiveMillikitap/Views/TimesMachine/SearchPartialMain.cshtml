@@ -1,0 +1,254 @@
+﻿@model List<RectImageArchiveMillikitap.Models.BooksJson>
+@using System.Collections;
+@{
+    var Locale = ViewData["Translate"] as Hashtable;
+    var typesList = ViewData["types"] as List<RectImageArchiveMillikitap.Models.TypesLanguagesList>;
+    var themesList = ViewData["themes"] as List<RectImageArchiveMillikitap.Models.ThemesLanguagesList>;
+    //1. Получаем сборники -> isCollected
+    //2. Получаем оставшиеся -> !isCollected
+    if (Model.Any())
+    {
+        int paginatorIndex = 1;
+        //Итератор > maxVisibleCount ? добавляем класс "hiddenEl"
+        string paginatorOtherClass = string.Empty;
+        //Количество видимых элементов
+        int visibleCount = 10;
+        //Сборники группируем
+        var collectedBooksGroup = Model?.Where(c => c.isCollectedBooks.Value)?.OrderByDescending(c=>c.BookId)?.GroupBy(c => new { c.InventoryCollectedBook, c.isCollectedBooks })?.ToList();
+        //Не являются сборниками
+        var booksSingles = Model?.Where(c => !c.isCollectedBooks.Value)?.OrderByDescending(c=>c.BookId)?.ToList();
+        <input type="hidden" id="visibleCount" value="@visibleCount" />
+        <ol class="search-results apachesolr_search-results">
+            @* Визуализация сборника *@
+            @if (collectedBooksGroup != null && collectedBooksGroup.Any())
+            {
+                foreach (var i in collectedBooksGroup)
+                {
+                    RectImageArchiveMillikitap.Models.BooksJson bookMain = null;
+                    List<RectImageArchiveMillikitap.Models.BooksJson> previewsCollected = new List<RectImageArchiveMillikitap.Models.BooksJson>();
+                    if (i.Count() > 1)
+                    {
+                        //Если сборник
+                        //Главная страница сборника
+                        bookMain = i.LastOrDefault();
+                        //Превью сборников
+                        previewsCollected = i?.OrderBy(c=>c.BookId)?.ToList();
+                    }
+                    else
+                    {
+                        //Одна книга
+                        bookMain = i.FirstOrDefault();
+                    }
+
+                    if (paginatorIndex > visibleCount)
+                    {
+                        paginatorOtherClass = "hiddenEl";
+                    }
+
+                    <li class="search-result search-result--logical @paginatorOtherClass" data-paginator="@paginatorIndex">
+                        <div class="search-result__image @(!bookMain.Visible.Value?"notVisible":string.Empty)">
+                            <a href="@Url.Action("View","TimesMachine",new { BookId = @bookMain.BookId })" title="@Locale["Открыть_книгу"]" target="_blank">
+                                @{
+                                    string imageSrc = "/Content/Images/notImage.png";
+                                    if (!string.IsNullOrEmpty(bookMain.FileNamePreview))
+                                    {
+                                        imageSrc = string.Format("/Books/{0}/{1}", bookMain.HashFolder, bookMain.FileNamePreview);
+                                    }
+                                }
+                                <img loading="lazy" src="@imageSrc" alt="@bookMain.BookName">
+                            </a>
+                        </div>
+                        <div class="search-result__text">
+                            <div class="search-result__text-inner">
+                                <h3 class="search-result__text__title">
+                                    <a href="@Url.Action("View","TimesMachine",new { BookId = @bookMain.BookId })" title="@Locale["Открыть_книгу"]" target="_blank">
+                                        <span title="@Locale["Сборник_сочинений"]">
+                                            <i class="fa fa-book" aria-hidden="true"></i>
+                                        </span>
+                                        @{
+                                            if (!string.IsNullOrEmpty(bookMain.CollectedNameText))
+                                            {
+                                                <el>@string.Format("«{0}»", bookMain.CollectedNameText)</el>
+                                            }
+                                        }
+                                    </a>
+                                </h3>
+                                <div class="search-snippet-info">
+                                    <span class="isCollection">
+                                        @Locale["Сборник_сочинений"]
+                                        <el>№ @bookMain.InventoryCollectedBook</el>
+                                    </span>
+                                    @{
+                                        if (!string.IsNullOrEmpty(bookMain.Description))
+                                        {
+                                            <p class="search-snippet">
+                                                @bookMain.Description
+                                            </p>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <div class="slider_thumbs">
+                                    @{
+                                        if (previewsCollected.Any())
+                                        {
+                                            foreach (var p in previewsCollected)
+                                            {
+                                                string imageSrcPreview = "/Content/Images/notImage.png";
+                                                if (!string.IsNullOrEmpty(p.FileNamePreview))
+                                                {
+                                                    imageSrcPreview = string.Format("/Books/{0}/{1}", p.HashFolder, p.FileNamePreview);
+                                                }
+                                                <div class="carousel-cell @(!p.Visible.Value?"notVisible":string.Empty)">
+                                                    <a href="@Url.Action("View","TimesMachine",new { BookId = @p.BookId })" target="_blank" title="@p.BookName" class="thumblinks">
+                                                        <img loading="lazy" data-flickity-lazyload="@imageSrcPreview" class="search-result__slider__thumb carousel-cell-image">
+                                                    </a>
+                                                </div>
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    paginatorIndex++;
+                }
+            }
+            @* Визуализация одной книги *@
+            @if (booksSingles != null && booksSingles.Any())
+            {
+                foreach (var i in booksSingles)
+                {
+                    RectImageArchiveMillikitap.Models.BooksJson bookMain = i;
+                    //Формируем верстку
+                    if (paginatorIndex > visibleCount)
+                    {
+                        paginatorOtherClass = "hiddenEl";
+                    }
+                    <li class="search-result search-result--logical @paginatorOtherClass @(!bookMain.Visible.Value?"notVisible":string.Empty)" data-paginator="@paginatorIndex">
+                        <div class="search-result__image">
+                            <a href="@Url.Action("View","TimesMachine",new { BookId = @bookMain.BookId })" title="@Locale["Открыть_книгу"]" target="_blank">
+                                @{
+                                    string imageSrc = "/Content/Images/notImage.png";
+                                    if (!string.IsNullOrEmpty(bookMain.FileNamePreview))
+                                    {
+                                        imageSrc = string.Format("/Books/{0}/{1}", bookMain.HashFolder, bookMain.FileNamePreview);
+                                    }
+                                }
+                                <img loading="lazy" src="@imageSrc" alt="@bookMain.BookName">
+                            </a>
+                        </div>
+                        <div class="search-result__text">
+                            <div class="search-result__text-inner">
+                                <h3 class="search-result__text__title">
+                                    <a href="@Url.Action("View","TimesMachine",new { BookId = @bookMain.BookId })" title="@Locale["Открыть_книгу"]" target="_blank">
+                                        @(!string.IsNullOrEmpty(bookMain.BookName) ? bookMain.BookName : Locale["без_названия"])
+                                    </a>
+                                </h3>
+                                <div class="search-snippet-info">
+                                    @{
+                                        if (!string.IsNullOrEmpty(bookMain.Description))
+                                        {
+                                            <p class="search-snippet">
+                                                @bookMain.Description
+                                            </p>
+                                        }
+                                    }
+                                    <span>
+                                        @Locale["Тип"]:
+                                        @{
+                                            if (typesList != null && typesList.Any())
+                                            {
+                                                if (bookMain.TypeId.HasValue)
+                                                {
+                                                    var val = typesList?.Where(c => c.TypesLanguagesListId == bookMain.TypeId.Value)?.FirstOrDefault();
+                                                    if (val != null)
+                                                    {
+                                                        <el>@val.DescriptionTypeRussian</el>
+                                                    }
+                                                    else
+                                                    {
+                                                        <el>Id: @bookMain.TypeId.Value</el>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <el>-</el>
+                                                }
+                                            }
+                                        }
+                                    </span>
+                                    <span>
+                                        @Locale["Тематика"]:
+                                        @{
+                                            if (themesList != null && themesList.Any())
+                                            {
+                                                if (bookMain.ThemeId.HasValue)
+                                                {
+                                                    var val = themesList?.Where(c => c.ThemesLanguagesListId == bookMain.ThemeId.Value)?.FirstOrDefault();
+                                                    if (val != null)
+                                                    {
+                                                        <el>@val.DescriptionThemeRussian</el>
+                                                    }
+                                                    else
+                                                    {
+                                                        <el>Id: @bookMain.ThemeId.Value</el>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <el>-</el>
+                                                }
+                                            }
+                                        }
+                                    </span>
+                                    @*<span>
+                                        Год:
+                                    </span>*@
+                                    <span>
+                                        @Locale["Страниц"]: @bookMain.PageCount
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    paginatorIndex++;
+                }
+            }
+        </ol>
+        <script>
+            @{ 
+                if(Model.Count> visibleCount)
+                {
+                    <text>
+                        $('#more_btn').css('display', 'inline-flex');
+                    </text>
+                }
+            }            
+            var flickity = null;
+            $(document).ready(function () {
+                flickity = $('.slider_thumbs').flickity({
+                    draggable: true,
+                    freeScroll: true,
+                    contain: true,
+                    pageDots: false,
+                    prevNextButtons: false,
+                    lazyLoad: true,
+                    bgLazyLoad: true,
+                    autoPlay: 1300,
+                    lazyLoad: 20,
+                    cellAlign: 'left',
+                    //rightToLeft: true
+                });
+            });
+        </script>
+    }
+    else
+    {
+        <script>
+            toastMess('@Locale["Поиск_не_дал_результа"]', true);
+            $('#more_btn').hide('100');
+        </script>
+    }
+}

@@ -1,0 +1,565 @@
+.col-sm-12
+{
+    margin-top: 1em;
+}
+/* Loader 1 */
+.loader-1
+{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    box-sizing: border-box;
+    border: solid 3px #fff;
+    z-index: 1001;
+    animation: loader-1 2s linear infinite;
+}
+
+.loader-1::before
+{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #fff;
+    animation: animateBg-1 2s linear infinite;
+}
+
+.loader-1.complete
+{
+    transition: .5s;
+    opacity: 0;
+}
+
+@keyframes loader-1
+{
+    0%
+    {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    25%
+    {
+        transform: translate(-50%, -50%) rotate(180deg);
+    }
+
+    50%
+    {
+        transform: translate(-50%, -50%) rotate(180deg);
+    }
+
+    75%
+    {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+
+    100%
+    {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+@keyframes animateBg-1
+{
+    0%
+    {
+        height: 0;
+    }
+
+    25%
+    {
+        height: 0;
+    }
+
+    50%
+    {
+        height: 100%;
+    }
+
+    75%
+    {
+        height: 100%;
+    }
+
+    100%
+    {
+        height: 0;
+    }
+}
+/* Loader 2 */
+
+.loader-2
+{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    box-sizing: border-box;
+    border: solid 3px rgb(141, 141, 141);
+    border-top: solid 3px #FF0000;
+    border-radius: 100%;
+    z-index: 1001;
+    animation: loader-2 2s linear infinite;
+}
+
+
+.loader-2.complete
+{
+    transition: .5s;
+    opacity: 0;
+}
+
+@keyframes loader-2
+{
+    0%
+    {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100%
+    {
+        transform: translate(-50%, -50%) rotate(720deg);
+    }
+}
+
+/* Loader 3 */
+
+.loader-3
+{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    box-sizing: border-box;
+    border: solid 3px #000);
+    border-top: solid 3px #FF0000;
+    border-radius: 100%;
+    z-index: 1001;
+    animation: loader-3 2s linear infinite;
+}
+
+.loader-3::before
+{
+    content: '';
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    border: solid 3px #000);
+    border-top: solid 3px #00FF00;
+    border-radius: 100%;
+}
+
+.loader-3::after
+{
+    content: '';
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    border: solid 3px #000);
+    border-top: solid 3px #0000FF;
+    border-radius: 100%;
+}
+
+.loader-3.complete
+{
+    transition: .5s;
+    opacity: 0;
+}
+
+@keyframes loader-3
+{
+    0%
+    {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100%
+    {
+        transform: translate(-50%, -50%) rotate(720deg);
+    }
+}
+
+/* Loader 4 */
+
+.loader-4
+{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 160px;
+    height: 30px;
+    z-index: 1001;
+    color: white;
+    font-size: 1.4em;
+}
+
+    .loader-4::before {
+        content: attr(title);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        letter-spacing: 5px;
+        height: 100%;
+        color: rgb(66, 66, 66);
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .loader-4::after {
+        content: attr(title);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        letter-spacing: 5px;
+        height: 100%;
+        color: #fff;
+        overflow: hidden;
+        border-right: 1px solid #fff;
+        animation: smooth_loading 10s infinite;
+        white-space: nowrap;
+    }
+
+@keyframes smooth_loading
+{
+    0%
+    {
+        width: 0%;
+    }
+    50%
+    {
+        width: 100%;
+    }
+    100%
+    {
+        width: 0%;
+    }
+}
+
+.loader-4.complete
+{
+    transition: .5s;
+    opacity: 0;
+}
+
+/* Loader 5 */
+
+.loader-5
+{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 160px;
+    height: 30px;
+    z-index: 1001;
+    color: white;
+    font-size: 1.4em;
+}
+
+.loader-5::before
+{
+    content: "LOADING...";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    letter-spacing: 5px;
+    height: 100%;
+    color: #000;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.loader-5::after
+{
+    content: "LOADING...";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    letter-spacing: 5px;
+    height: 100%;
+    color: #fff;
+    overflow: hidden;
+    animation: loader5 1.5s infinite steps(3);
+    white-space: nowrap;
+}
+
+@keyframes loader5
+{
+    0%
+    {
+        width: 80%;
+    }
+    50%
+    {
+        width: 100%;
+    }
+    100%
+    {
+        width: 80%;
+    }
+}
+
+.loader-5.complete
+{
+    transition: .5s;
+    opacity: 0;
+}
+
+/* Loader 6 */
+
+.loader-6
+{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    box-sizing: border-box;
+    border: solid 6px #000000;
+    border-bottom: solid 6px rgb(0, 162, 255);
+    border-top: solid 6px rgb(0, 162, 255);
+    border-radius: 100%;
+    z-index: 1001;
+    animation: loader-6 2s linear infinite;
+}
+
+
+.loader-6.complete
+{
+    transition: .5s;
+    opacity: 0;
+}
+
+@keyframes loader-6
+{
+    0%
+    {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100%
+    {
+        transform: translate(-50%, -50%) rotate(720deg);
+    }
+}
+
+/* PreLoader 1 */
+
+.preloader-1
+{
+    z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: 1s;
+}
+
+.preloader-1::before
+{
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    transition: 1s;
+}
+
+.preloader-1.complete::before
+{
+    opacity: 0;
+}
+
+/*PreLoader 2 */
+
+.preloader-2
+{
+    z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: 1s;
+}
+
+.preloader-2::before
+{
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    transition: 1s;
+}
+
+.preloader-2.complete::before
+{
+    animation: open_up 1s ease-in-out;
+}
+
+@keyframes open_up
+{
+    0%
+    {
+        height: 100%;
+    }
+    100%
+    {
+        height: 0%;
+    }
+}
+
+/* PreLoader 3 */
+
+.preloader-3
+{
+    z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    
+}
+
+.preloader-3::before
+{
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background: #000;
+}
+
+.preloader-3::after
+{
+    content: '';
+    position: absolute;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background: #000;
+    
+}
+
+.preloader-3.complete::before
+{
+    animation: left_door 1s ease-in-out;
+}
+
+.preloader-3.complete::after
+{
+    animation: right_door 1s ease-in-out;
+}
+
+@keyframes left_door
+{
+    0%
+    {
+        width: 50%;
+    }
+    100%
+    {
+        width: 0%;
+    }
+}
+
+@keyframes right_door
+{
+    0%
+    {
+        width: 50%;
+    }
+    100%
+    {
+        width: 0%;
+    }
+}
+
+
+/* PreLoader 4 */
+
+.preloader-4
+{
+    z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    
+}
+
+.preloader-4::before
+{
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 50%;
+    background: #000;
+}
+
+.preloader-4::after
+{
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 50%;
+    background: #000;
+}
+
+.preloader-4.complete::before
+{
+    animation: open_gate_up 1s ease-in-out;
+}
+
+.preloader-4.complete::after
+{
+    animation: open_gate_down 1s ease-in-out;
+}
+
+@keyframes open_gate_down
+{
+    0%
+    {
+        height: 50%;
+    }
+    100%
+    {
+        height: 0%;
+    }
+}
+
+@keyframes open_gate_up
+{
+    0%
+    {
+        height: 50%;
+    }
+    100%
+    {
+        height: 0%;
+    }
+}

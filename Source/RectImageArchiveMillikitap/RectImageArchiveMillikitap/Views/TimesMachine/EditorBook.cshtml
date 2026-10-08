@@ -1,0 +1,2641 @@
+﻿@using RectImageArchiveMillikitap.Models;
+@{string version = "2.1.6";}
+<link href="~/Content/ControlPanel/uploader.css?v=@version" rel="stylesheet" />
+@* Uploader *@
+<link href="~/Content/Uploader/uploadfile.css?v=@version" rel="stylesheet" />
+<script src="~/Content/Uploader/jquery.uploadfile.min.js?v=@version"></script>
+@* Select *@
+<link href="~/Content/Select2/select2.min.css?v=@version" rel="stylesheet" />
+<script src="~/Content/Select2/select2.min.js?v=@version"></script>
+@* Hijri calendar *@
+<link href="~/Content/HijriCalendar/bootstrap-datetimepicker.min.css" rel="stylesheet" />
+@*<script src="~/Content/HijriCalendar/momentjs.js"></script>*@
+<script src="~/Content/HijriCalendar/moment-with-locales.js"></script>
+<script src="~/Content/HijriCalendar/moment-hijri.js"></script>
+<script src="~/Content/HijriCalendar/bootstrap-hijri-datetimepicker.js"></script>
+<link href="~/Content/EditorBook/EditorBook.css?v=@version" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js" integrity="sha384-qlmct0AOBiA2VPZkMY3+2WqkHtIQ9lSdAsAn5RUJD/3vA5MKDgSGcdmIv4ycVxyn" crossorigin="anonymous"></script>
+@* Ion RangeSlider *@
+<link href="~/Content/IonRangeSlider/ion.rangeSlider.css?v=@version" rel="stylesheet" />
+<script src="~/Content/IonRangeSlider/ion.rangeSlider.min.js?v=@version"></script>
+@{
+    ViewBag.Title = "Редактирование книги";
+    Layout = "~/Views/Shared/_LayoutControl.cshtml";
+    var info = ViewData["BookInfo"] as RectImageArchiveMillikitap.Models.Books;
+    var progress = 0;
+    bool isExrimistStatements = info != null && info.Attributes != null && info.Attributes.isExrimistStatements.HasValue ? info.Attributes.isExrimistStatements.Value : false;
+    if (info != null)
+    {
+        if (info.Attributes != null)
+        {
+            if (info.Attributes.PercentWorkDescr.HasValue)
+            {
+                progress += info.Attributes.PercentWorkDescr.Value;
+            }
+            if (info.Attributes.PercentWorkProcessing.HasValue)
+            {
+                progress += info.Attributes.PercentWorkProcessing.Value;
+            }
+            if (info.Attributes.PercentWorkScanner.HasValue)
+            {
+                progress += info.Attributes.PercentWorkScanner.Value;
+            }
+            progress = progress / 3;
+        }
+    }
+    string pathBook = (string)ViewData["folderBookUrl"];
+    //Первая страница
+    var firstPage = new RectImageArchiveMillikitap.Models.Pages();
+    //Список пользователей
+    var usersForControlBook = ViewData["Users"] as List<RectImageArchiveMillikitap.Models.UsersForControlBook>;
+    if (info != null)
+    {
+        if (info.Pages.Any())
+        {
+            firstPage = info.Pages?.FirstOrDefault();
+        }
+    }
+    else
+    {
+        firstPage = null;
+    }
+    var userId = (int)ViewData["UserId"];
+    var isGrantUser = (bool)ViewData["GrantUser"];
+    //Состояния
+    var statesList = (ViewData["StatesList"] as List<RectImageArchiveMillikitap.Models.States>)?.OrderBy(c => c.StateDescription)?.ToList();
+    //Языки
+    var langList = (ViewData["LangList"] as List<RectImageArchiveMillikitap.Models.LanguageTableList>)?.OrderBy(c => c.LanguageTableName)?.ToList();
+    //Тематики
+    var themesList = ViewData["ThemesList"] as List<RectImageArchiveMillikitap.Models.ThemesLanguagesList>;
+    //Типы
+    var typesList = ViewData["TypesList"] as List<RectImageArchiveMillikitap.Models.TypesLanguagesList>;
+    //Регионы
+    var regionsList = ViewData["RegionsList"] as List<RectImageArchiveMillikitap.Models.Regions>;
+    //Коллекции
+    var collectionsList = ViewData["CollectionsList"] as List<RectImageArchiveMillikitap.Models.Collection>;
+    //Сборник сочинений
+    var inventoryCollectedList = ViewData["InventoryCollectedList"] as List<string>;
+    var namesCollectedList = ViewData["NamesCollectedList"] as List<string>;
+}
+<body>
+    <div class="current-page">
+        <a title="Обновить страницу ПУ" href="@Url.Action("ControlPanel","TimesMachine")">
+            <img width="55" src="~/Content/Images/logo_main.png?v=@version" class="custom-logo" srcset="/Content/Images/logo_main.png?v=@version" sizes="(max-width: 300px) 100vw, 300px">
+        </a>
+        <ul class="bc">
+            <li>ПУ</li>
+            <li><span class="p_curr">Редактирование книги</span></li>
+        </ul>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-2 inset_shadow">
+                <div class="card">
+                    <div class="card__image no_round">
+                        @{
+                            if (info != null)
+                            {
+                                if (!String.IsNullOrEmpty(info.BookCoverFileName))
+                                {
+                                    <img id="coverImg" class="zoom" loading="lazy" src="@pathBook@(string.Format("{0}", info.BookCoverFileName))" />
+                                }
+                                else
+                                {
+                                    <img id="coverImg" class="zoom" loading="lazy" src="@(Url.Content("/Content/Images/notImage.png"))" />
+                                }
+                                <text>
+                                    <script>
+                                      var pathBook = "@(string.Format("/Books/{0}/", info.HashFolder))";
+                                    </script>
+                                </text>
+                            }
+                            else
+                            {
+                                <img class="zoom" loading="lazy" src="@(Url.Content("/Content/Images/notImage.png"))" />
+                            }
+                        }
+                    </div>
+                    <div class="card__body">
+                        @{
+                            if (info != null)
+                            {
+                                <h2 class="user__name">@info.BookName</h2>
+                                <p class="user__description">
+                                    <div id="progress_book" class="progress-bar progress-bar-@(progress < 100 ? "info" : "success") progress-bar-striped" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: @(string.Format("{0}%", progress));display:inline-table;">
+                                        @(string.Format("{0}%", progress))
+                                    </div>
+                                </p>
+                                <p class="user__description">
+                                    @if (!info.Visible)
+                                    {
+                                        <span class="badge badge-danger">Скрыта</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-warning">Опубликована</span>
+                                    }
+                                </p>
+                            }
+                            else
+                            {
+                                <h2 class="user__name">Мастер новой книги</h2>
+                                <p class="user__description">
+                                    <span class="badge badge-default">Черновик</span>
+                                </p>
+                                <p></p>
+                            }
+                        }
+                    </div>
+                    @if (info != null)
+                    {
+                        <div class="card__footer">
+                            <a target="_blank" href="@Url.Action("View","TimesMachine",new { @BookId = info.BookId })" class="btn btn__primary"><i class="fa fa-external-link" aria-hidden="true"></i> Открыть книгу</a>
+                        </div>
+                    }
+                </div>
+
+                <small class="mb-2 d-inline-block text-muted"></small>
+                <div class="list-group">
+                    <a href="@Url.Action("ControlPanel","TimesMachine")" class="btn btn-default"><i class="fa fa-external-link"></i>&nbsp;&nbsp;В панель управления</a>
+                    <a href="@Url.Action("Logout","Account")" class="btn btn-default"><i class="fa fa-sign-out"></i>&nbsp;&nbsp;Выйти</a>
+                </div>
+                <small class="mb-2 d-inline-block text-muted"></small>
+                <div class="list-group">
+
+                </div>
+            </div>
+            <div class="col-sm-10">
+                <div class="panel-body">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="tab" href="#main" role="tab">Основные параметры книги</a>
+                        </li>
+                        @{
+                            if (isGrantUser)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#attach" role="tab">Изображения @(info?.Pages?.Where(c => c.Visible).Count()) (страницы)</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#directory" role="tab">Справочники</a>
+                                </li>
+                            }
+
+                        }
+                    </ul>
+                    <br />
+                    <div class="tab-content">                        
+                        <div class="tab-pane active" id="main" role="tabpanel">
+                            @using (Html.BeginForm("SaveBook", "TimesMachine", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                            {
+                                <h4>
+                                    <i class="fa fa-book" aria-hidden="true"></i>
+                                    @{
+                                        if (info != null)
+                                        {
+                                            <span>Редактирование: Id=@info.BookId</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Новая книга</span>
+                                        }
+                                    }
+                                </h4>
+                                if (info != null)
+                                {
+                                    <div style="color:#aaaaaa;">
+                                        <i class="fa fa-pencil" aria-hidden="true"></i><span> Эксперт: @(info?.UserExpert?.Username)</span>
+                                        @if (@info.UserIdCreator != null)
+                                        {
+                                            <span>, добавил(а) книгу: <i class="fa fa-lock" aria-hidden="true"></i> @info.UserIdCreator.Username</span>
+                                        }
+                                    </div>
+                                }
+                                <hr />
+                                if (isExrimistStatements)
+                                {
+                                    <div class="alert alert-danger alert-dismissible" role="alert">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                        <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Данная книга содержит сведения, которые могут быть признаны экстремистскими
+                                    </div>
+                                }
+
+                                if (info != null)
+                                {
+                                    @Html.Hidden("BookId", info.BookId)
+                                }
+                                /* Accordion */
+                                <div class="accordion form-group">
+                                    <div class="accordion__item">
+                                        <div class="accordion__title accordion-active">
+                                            <div class="accordion__arrow accordion__rotate"><span class="accordion__arrow-item ">+</span></div>
+                                            <span class="accordion__title-text">Первичное описание</span>
+                                        </div>
+                                        <div class="accordion__content" style="display: block;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="bookName">
+                                                            <span class="badge badge-danger">обязательное</span>
+                                                            <strong>Название книги (оригинал)</strong>
+                                                        </label>
+                                                        <input type="text" value="@(info!=null ? info.BookName : string.Empty)" required="required" class="form-control" placeholder="Название" name="bookName" id="bookName">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="formFile" class="form-label">
+                                                            @{
+                                                                if (info != null)
+                                                                {
+                                                                    if (!string.IsNullOrEmpty(info.PdfFile))
+                                                                    {
+                                                                        <a href="~/Books/@info.HashFolder/@info.PdfFile"><span class="uploadFileNameBook"><i class="fa fa-download" aria-hidden="true"></i> @info.PdfFile</span>  </a>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="uploadFileNameBook">файл не загружен</span>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="uploadFileNameBook">вложение</span>
+                                                                }
+                                                            }
+                                                        </label>
+                                                        <input class="form-control" type="file" name="fileBook">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @*Millikitap поля*@
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="inv">Шифр (инвент. номер)</label>
+                                                        <input type="text" value="@(info!=null && info.Attributes!=null ?info.Attributes?.Inventory:string.Empty)" class="form-control" placeholder="Шифр (инвент. номер)" name="Inventory" id="inv">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="width">Ширина (мм)</label>
+                                                        <input type="number" value="@(info!=null && info.Attributes!=null ?info?.Attributes?.Width:0)" class="form-control" placeholder="Ширина" name="Width" min="0" id="width">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="Height">Высота (мм)</label>
+                                                        <input type="number" value="@(info!=null && info.Attributes!=null ?info?.Attributes?.Height:0)" class="form-control" placeholder="Высота" name="Height" min="0" id="Height">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="PageCount">Количество листов</label>
+                                                        <input type="number" value="@(info!=null && info.Attributes!=null ?info?.Attributes?.PageCount:0)" class="form-control" placeholder="Количество листов" name="PageCount" id="PageCount">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="StatesId">
+                                                            <button onclick="stateClass.getAll('#StatesId')" type="button"><i class="fa fa-refresh" aria-hidden="true"></i></button> Состояние
+                                                        </label>
+                                                        <select name="StatesId" id="StatesId" required class="form-control">
+                                                            <option>-</option>
+                                                            @{
+                                                                if (statesList != null && statesList.Any())
+                                                                {
+                                                                    if (info != null && info.Attributes != null)
+                                                                    {
+                                                                        foreach (var l in statesList)
+                                                                        {
+                                                                            if (info.Attributes.StatesId.HasValue && info.Attributes.StatesId.Value == l.StatesId)
+                                                                            {
+                                                                                <option selected value="@l.StatesId">@l.StateDescription</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@l.StatesId">@l.StateDescription</option>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        foreach (var l in statesList)
+                                                                        {
+                                                                            <option value="@l.StatesId">@l.StateDescription</option>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label>
+                                                        <strong>
+                                                            Перелистывание страниц справа налево
+                                                        </strong>
+                                                    </label>
+                                                    <div class="flx">
+                                                        <input type="checkbox" name="isRtl" id="isRtl" @(info != null ? info.isRtl.HasValue ? info.isRtl.Value ? "checked" : string.Empty : string.Empty : string.Empty) />
+                                                        <label for="isRtl">Checkbox</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @* Сканирование/Обработка *@
+                                    <div class="accordion__item">
+                                        <div class="accordion__title">
+                                            <div class="accordion__arrow"><span class="accordion__arrow-item ">+</span></div>
+                                            <span class="accordion__title-text">Сканирование / Обработка</span>
+                                        </div>
+                                        <div class="accordion__content">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <h3>Сканирование</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="StartDateScan">Дата начала по сканированию</label>
+                                                        <input class="form-control" value="@(info!=null && info.Attributes!=null ? info?.Attributes?.StartDateScan?.ToString("yyyy-MM-dd"):null)" id="StartDateScan" name="StartDateScan" type="date">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="EndDateScan">Дата окончания по сканированию</label>
+                                                        <input class="form-control" value="@(info!=null && info.Attributes!=null ? info?.Attributes?.EndDateScan?.ToString("yyyy-MM-dd"):null)" id="EndDateScan" name="EndDateScan" type="date">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="FIOScanner">ФИО сканировщика</label>
+                                                        <input type="text" class="form-control" value="@(info!=null && info.Attributes!=null ? info?.Attributes?.FIOScanner:string.Empty)" id="FIOScanner" name="FIOScanner">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="PercentWorkScanner">Процент работы (<strong><span id="percentScanSpan">@(info!=null && info.Attributes!=null ? info?.Attributes?.PercentWorkScanner:0)</span>%</strong>)</label>
+                                                        <input type="range" id="PercentWorkScanner" oninput="$('#percentScanSpan').html($(this).val())" class="progressDefault range" value="@(info!=null && info.Attributes!=null ? info?.Attributes?.PercentWorkScanner:0)" name="PercentWorkScanner" min="0" max="100" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <h3>Обработка</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="StartDateScanProcessing">Дата начала работ по обработке</label>
+                                                        <input class="form-control" id="StartDateScanProcessing" value="@(info!=null && info.Attributes!=null ? info?.Attributes?.StartDateScanProcessing?.ToString("yyyy-MM-dd"):null)" name="StartDateScanProcessing" type="date">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="EndDateScanProcessing">Дата окончания работ по обработке</label>
+                                                        <input class="form-control" id="EndDateScanProcessing" value="@(info!=null && info.Attributes!=null ? info?.Attributes?.EndDateScanProcessing?.ToString("yyyy-MM-dd"):null)" name="EndDateScanProcessing" type="date">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="FIOProcessing">ФИО обработчика</label>
+                                                        <input type="text" class="form-control" id="FIOProcessing" value="@(info!=null && info.Attributes!=null ? info?.Attributes?.FIOProcessing:string.Empty)" name="FIOProcessing">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="PercentWorkProcessing">Процент работы (<strong><span id="percentWorkSpan">@(info!=null && info.Attributes!=null ? info?.Attributes?.PercentWorkProcessing : 0)</span>%</strong>)</label>
+                                                        <input type="range" oninput="$('#percentWorkSpan').html($(this).val())" class="progressDefault" value="@(info!=null && info.Attributes!=null ? info?.Attributes?.PercentWorkProcessing:0)" id="PercentWorkProcessing" name="PercentWorkProcessing" min="0" max="100">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @* Описание *@
+                                    <div class="accordion__item">
+                                        <div class="accordion__title">
+                                            <div class="accordion__arrow"><span class="accordion__arrow-item ">+</span></div>
+                                            <span class="accordion__title-text">Экспертное описание</span>
+                                        </div>
+                                        <div class="accordion__content">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="StartDateDescriptionProcessing">Дата начала работ по описанию</label>
+                                                        <input class="form-control" value="@(info!=null && info.Attributes!=null ? info?.Attributes?.StartDateDescriptionProcessing?.ToString("yyyy-MM-dd"):string.Empty)" id="StartDateDescriptionProcessing" name="StartDateDescriptionProcessing" type="date">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="EndDateDescriptionProcessing">Дата окончания работ по описанию</label>
+                                                        <input class="form-control" value="@(info!=null && info.Attributes!=null ? info?.Attributes?.EndDateDescriptionProcessing?.ToString("yyyy-MM-dd"):string.Empty)" id="EndDateDescriptionProcessing" name="EndDateDescriptionProcessing" type="date">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="PercentWorkDescr">Процент работы (<strong><span id="percentWorkDescrSpan">@(info!=null && info.Attributes!=null ? info?.Attributes?.PercentWorkDescr : 0)</span>%</strong>)</label>
+                                                        <input type="range" id="PercentWorkDescr" oninput="$('#percentWorkDescrSpan').html($(this).val())" class="progressDefault" value="@(info!=null && info.Attributes!=null ? info?.Attributes?.PercentWorkDescr:0)" name="PercentWorkDescr" min="0" max="100">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="description">
+                                                            Краткое содержание
+                                                        </label>
+                                                        <textarea name="description" id="description" class="form-control" rows="4" cols="1">@(info != null ? info.Description:string.Empty)</textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="tags">Ключевые теги (через запятую)</label>
+                                                        <input type="text" class="form-control" id="tags" value="@(info!=null ?info.Tags:string.Empty)" placeholder="" name="tags">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label style="color: #ad0300; background: #f2dede; font-weight: 200; display: block; padding: 10px;">                                                        
+                                                            <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Содержит сведения, которые могут быть признаны экстремистскими                                                        
+                                                    </label>
+                                                    <div class="flx">
+                                                        <input @( isExrimistStatements ? "checked" : string.Empty ) type="checkbox" name="isExrimistStatements" id="exrimistStatements">
+                                                        <label for="exrimistStatements">Checkbox</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div id="isExrimistStatementsText" @(!isExrimistStatements ? "style=display:none;" : string.Empty)>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label for="exrimistStatementsText">
+                                                                Описательное поле где именно находится экстримистское содержние
+                                                            </label>
+                                                            <textarea name="exrimistStatementsText" id="exrimistStatementsText" class="form-control" rows="4" cols="1">@(info != null && info.Attributes!=null ? info.Attributes.exrimistStatementsText:string.Empty)</textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <h3>Характеристики</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @* Язык *@
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label>
+                                                            <button onclick="langClass.getAll()" type="button"><i class="fa fa-refresh" aria-hidden="true"></i></button> Язык (допустимо несколько вариантов)
+                                                        </label>
+                                                        <select name="LanguageId" id="LangId" class="form-control" multiple>
+                                                            @{
+                                                                if (langList != null && langList.Any())
+                                                                {
+                                                                    <option>-</option>
+                                                                    foreach (var l in langList)
+                                                                    {
+                                                                        if (info != null && info.BookLanguages != null && info.BookLanguages.Any())
+                                                                        {
+                                                                            var selected = info.BookLanguages?.Where(c => c.LanguageTableListsId == l.LanguageTableListId)?.FirstOrDefault();
+                                                                            if (selected != null)
+                                                                            {
+                                                                                <option selected value="@l.LanguageTableListId">@l.LanguageTableName</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@l.LanguageTableListId">@l.LanguageTableName</option>
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <option value="@l.LanguageTableListId">@l.LanguageTableName</option>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @* Регион *@
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="StateId">
+                                                            <button onclick="regionClass.getAll('#RegionsId')" type="button"><i class="fa fa-refresh" aria-hidden="true"></i></button> Регион
+                                                        </label>
+                                                        <select name="RegionsId" id="RegionsId" required class="form-control">
+                                                            <option>-</option>
+                                                            @{
+                                                                if (regionsList != null && regionsList.Any())
+                                                                {
+                                                                    if (info != null && info.Attributes != null)
+                                                                    {
+                                                                        foreach (var l in regionsList)
+                                                                        {
+                                                                            if (info.Attributes.RegionsId.HasValue && info.Attributes.RegionsId.Value == l.RegionsId)
+                                                                            {
+                                                                                <option selected value="@l.RegionsId">@l.RegionName</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@l.RegionsId">@l.RegionName</option>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        foreach (var l in regionsList)
+                                                                        {
+                                                                            <option value="@l.RegionsId">@l.RegionName</option>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @* Тематика *@
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="ThemeList">
+                                                            <button title="Обновить список тематик" onclick="themeClass.getAll('#ThemeList')" type="button"><i class="fa fa-refresh" aria-hidden="true"></i></button> Тематика
+                                                        </label>
+                                                        <select name="ThemesLanguagesListId" id="ThemeList" class="form-control">
+                                                            <option>-</option>
+                                                            @{
+                                                                if (themesList != null && themesList.Any())
+                                                                {
+                                                                    if (info != null && info.Attributes != null && info.Attributes.ThemesLanguagesListId.HasValue)
+                                                                    {
+                                                                        foreach (var t in themesList)
+                                                                        {
+                                                                            if (info.Attributes.ThemesLanguagesListId.Value == t.ThemesLanguagesListId)
+                                                                            {
+                                                                                <option value="@t.ThemesLanguagesListId" selected>@(string.Format("{0}/{1}/{2}", t.DescriptionThemeRussian, t.DescriptionThemeEnglish, t.DescriptionThemeArabic))</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@t.ThemesLanguagesListId">@(string.Format("{0}/{1}/{2}", t.DescriptionThemeRussian, t.DescriptionThemeEnglish, t.DescriptionThemeArabic))</option>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        foreach (var t in themesList)
+                                                                        {
+                                                                            <option value="@t.ThemesLanguagesListId">@(string.Format("{0}/{1}/{2}",t.DescriptionThemeRussian,t.DescriptionThemeEnglish,t.DescriptionThemeArabic))</option>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @* Тип *@
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="TypeList">
+                                                            <button title="Обновить список типов" onclick="typesClass.getAll('#TypeList')" type="button"><i class="fa fa-refresh" aria-hidden="true"></i></button> Тип
+                                                        </label>
+                                                        <select id="TypeList" name="TypesLanguagesListId" class="form-control">
+                                                            <option>-</option>
+                                                            @{
+                                                                if (typesList != null && typesList.Any())
+                                                                {
+                                                                    if (info != null && info.Attributes != null && info.Attributes.TypesLanguagesListId.HasValue)
+                                                                    {
+                                                                        foreach (var t in typesList)
+                                                                        {
+                                                                            if (info.Attributes.TypesLanguagesListId.Value == t.TypesLanguagesListId)
+                                                                            {
+                                                                                <option value="@t.TypesLanguagesListId" selected>@(string.Format("{0}/{1}/{2}", t.DescriptionTypeRussian, t.DescriptionTypeEnglish, t.DescriptionTypeArabic))</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@t.TypesLanguagesListId">@(string.Format("{0}/{1}/{2}", t.DescriptionTypeRussian, t.DescriptionTypeEnglish, t.DescriptionTypeArabic))</option>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        foreach (var t in typesList)
+                                                                        {
+                                                                            <option value="@t.TypesLanguagesListId">@(string.Format("{0}/{1}/{2}", t.DescriptionTypeRussian, t.DescriptionTypeEnglish, t.DescriptionTypeArabic))</option>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @* Коллекция *@
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="CollectionId">
+                                                            <button title="Обновить список коллекций" onclick="collectionsClass.getAll('#CollectionList')" type="button"><i class="fa fa-refresh" aria-hidden="true"></i></button> Коллекция
+                                                        </label>
+                                                        <select name="CollectionId" id="CollectionList" class="form-control">
+                                                            <option>-</option>
+                                                            @{
+                                                                if (collectionsList != null && collectionsList.Any())
+                                                                {
+                                                                    if (info != null && info.Attributes != null)
+                                                                    {
+                                                                        foreach (var l in collectionsList)
+                                                                        {
+                                                                            if (info.Attributes.CollectionId.HasValue && info.Attributes.CollectionId.Value == l.CollectionId)
+                                                                            {
+                                                                                <option selected value="@l.CollectionId">@l.CollectionName</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@l.CollectionId">@l.CollectionName</option>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        foreach (var l in collectionsList)
+                                                                        {
+                                                                            <option value="@l.CollectionId">@l.CollectionName</option>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="ParametersPaper">Характеристика физических параметров бумаги</label>
+                                                        <input type="text" value="@(info!=null && info.Attributes!=null ? info.Attributes.ParametersPaper:string.Empty)" class="form-control" id="ParametersPaper" name="ParametersPaper" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label>
+                                                        <strong>
+                                                            Является частью сборника сочинений
+                                                        </strong>
+                                                    </label>
+                                                    @{
+                                                        bool isCollectedBooks = info != null && info.Attributes != null && info.Attributes.isCollectedBooks.HasValue ? info.Attributes.isCollectedBooks.Value : false;
+                                                    }
+                                                    <div class="flx">
+                                                        <input @( isCollectedBooks ? "checked" : string.Empty ) type="checkbox" name="isCollectedBooks" id="isCollectedBooks">
+                                                        <label for="isCollectedBooks">Checkbox</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div id="collectionParameters" @(!isCollectedBooks ? "style=display:none;" : string.Empty)>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label>
+                                                                Инвентарный номер для группировки в сборник
+                                                                <br />
+                                                                <small>Если нужного значения нет в справочнике, введите значение и нажмите "Enter"</small>
+                                                            </label>
+                                                            <select name="InventoryCollectedBook">
+                                                                <option>-</option>
+                                                                @{
+                                                                    if (inventoryCollectedList != null && inventoryCollectedList.Any())
+                                                                    {
+                                                                        foreach (var i in inventoryCollectedList)
+                                                                        {
+                                                                            if (info != null)
+                                                                            {
+                                                                                if (info.Attributes != null && !string.IsNullOrEmpty(info.Attributes.InventoryCollectedBook))
+                                                                                {
+                                                                                    if (info.Attributes.InventoryCollectedBook == i)
+                                                                                    {
+                                                                                        <option selected value="@i">@i</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@i">@i</option>
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@i">@i</option>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@i">@i</option>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label>Общее название сборника</label>
+                                                            <select name="CollectedNameText">
+                                                                <option>-</option>
+                                                                @{
+                                                                    if (namesCollectedList != null && namesCollectedList.Any())
+                                                                    {
+                                                                        foreach (var i in namesCollectedList)
+                                                                        {
+                                                                            if (info != null)
+                                                                            {
+                                                                                if (info.Attributes != null && !string.IsNullOrEmpty(info.Attributes.CollectedNameText))
+                                                                                {
+                                                                                    if (info.Attributes.CollectedNameText == i)
+                                                                                    {
+                                                                                        <option selected value="@i">@i</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@i">@i</option>
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@i">@i</option>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@i">@i</option>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <h3>Название/Автор</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="NameOfBookArabic">Название сочинения в арабской графике</label>
+                                                        <input type="text" value="@(info!=null && info.Attributes!=null ?info?.Attributes?.NameOfBookArabic:string.Empty)" class="form-control" id="NameOfBookArabic" name="NameOfBookArabic" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="NameOfBookCyrillic">Название сочинения в кириллической транслитерации</label>
+                                                        <input type="text" value="@(info!=null && info.Attributes!=null ?info?.Attributes?.NameOfBookCyrillic:string.Empty)" class="form-control" id="NameOfBookCyrillic" name="NameOfBookCyrillic" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="NameOfBookEnglish">Название сочинения в английской транслитерации</label>
+                                                        <input type="text" value="@(info!=null && info.Attributes!=null ?info.Attributes?.NameOfBookEnglish:string.Empty)" class="form-control" id="NameOfBookEnglish" name="NameOfBookEnglish" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="AuthorOfArabic">Автор в арабской графике</label>
+                                                        <input type="text" value="@(info!=null && info.Attributes!=null ?info?.Attributes?.AuthorOfArabic:string.Empty)" class="form-control" id="AuthorOfArabic" name="AuthorOfArabic" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="AuthorOfCyrillic">Автор в кириллической транслитерации</label>
+                                                        <input type="text" value="@(info!=null && info.Attributes!=null ?info?.Attributes?.AuthorOfCyrillic:string.Empty)" class="form-control" id="AuthorOfCyrillic" name="AuthorOfCyrillic" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="AuthorOfEnglish">Автор в английской транслитерации</label>
+                                                        <input type="text" value="@(info!=null && info.Attributes!=null ?info?.Attributes?.AuthorOfEnglish:string.Empty)" class="form-control" id="AuthorOfEnglish" name="AuthorOfEnglish" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <h3>Переписывание</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="DateOfCorrespondenceGregorianCalendar">Дата переписки (Григорианский календарь)</label>
+                                                        <input value="@(info!=null && info?.Attributes!=null ? info?.Attributes?.DateOfCorrespondenceGregorianCalendar?.ToString("yyyy-MM-dd"):null)" type="date" id="DateOfCorrespondenceGregorianCalendar" name="DateOfCorrespondenceGregorianCalendar" class="form-control" />
+                                                    </div>
+                                                </div>
+                                                @*<div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="hijriCal_1">Дата переписки (Мусульманский календарь)</label>
+                                    <input autocomplete="off" value="@(info!=null && info?.Attributes!=null ? info?.Attributes?.DateOfCorrespondenceMusulmanCalendar?.ToString("dd.MM.yyyy"):null)" type="text" id="hijriCal_1" name="DateOfCorrespondenceMusulmanCalendar" class="form-control hijriCal" placeholder="дд.мм.гггг" />
+                                </div>
+                            </div>*@
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="ArabicDateText">Дата на мусульманском в описательном виде</label>
+                                                        <input value="@(info!=null && info?.Attributes!=null ?info.Attributes.ArabicDateText:string.Empty)" type="text" class="form-control" id="ArabicDateText" name="ArabicDateText" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="CorrespondenceArabic">Переписчик на арабской графике</label>
+                                                        <input value="@(info!=null && info?.Attributes!=null ?info.Attributes.CorrespondenceArabic:string.Empty)" type="text" class="form-control" id="CorrespondenceArabic" name="CorrespondenceArabic" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="CorrespondenceCyrillic">Переписчик в кириллице</label>
+                                                        <input value="@(info!=null && info.Attributes!=null ?info.Attributes?.CorrespondenceCyrillic:string.Empty)" type="text" id="CorrespondenceCyrillic" name="CorrespondenceCyrillic" class="form-control" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="CorrespondenceEnglish">Переписчик в английской транслитерации</label>
+                                                        <input value="@(info!=null && info?.Attributes!=null ?info.Attributes?.CorrespondenceEnglish:string.Empty)" type="text" class="form-control" id="CorrespondenceEnglish" name="CorrespondenceEnglish" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="PlaceCorrespondenceArabic">Место переписки (название (на арабской графике))</label>
+                                                        <input value="@(info!=null && info?.Attributes!=null?info.Attributes?.PlaceCorrespondenceArabic:string.Empty)" type="text" class="form-control" id="PlaceCorrespondenceArabic" name="PlaceCorrespondenceArabic" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="PlaceCorrespondenceRussian">Место переписки (название (на русском))</label>
+                                                        <input value="@(info!=null && info?.Attributes!=null?info.Attributes?.PlaceCorrespondenceRussian:string.Empty)" type="text" class="form-control" name="PlaceCorrespondenceRussian" id="PlaceCorrespondenceRussian" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="PlaceCorrespondenceTatar">Место переписки (название (на татарском))</label>
+                                                        <input value="@(info!=null && info?.Attributes!=null?info.Attributes?.PlaceCorrespondenceTatar:string.Empty)" type="text" class="form-control" name="PlaceCorrespondenceTatar" id="PlaceCorrespondenceTatar" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="PlaceCorrespondenceEnglish">Место переписки (название (на английском))</label>
+                                                        <input value="@(info!=null && info?.Attributes!=null?info.Attributes?.PlaceCorrespondenceEnglish:string.Empty)" type="text" class="form-control" name="PlaceCorrespondenceEnglish" id="PlaceCorrespondenceEnglish" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @{
+                                                var loc1 = string.Empty;
+                                                if (info != null && info.Attributes != null)
+                                                {
+                                                    if (info.Attributes.PlaceCorrespondenceLat != null && info.Attributes.PlaceCorrespondenceLon != null)
+                                                    {
+                                                        loc1 = string.Format("{0},{1}", info.Attributes.PlaceCorrespondenceLat?.ToString()?.Replace(",", "."), info.Attributes.PlaceCorrespondenceLon?.ToString()?.Replace(",", "."));
+                                                    }
+                                                }
+                                            }
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <a target="_blank" href="https://yandex.ru/maps/">Открыть Yandex.Maps в новой вкладке</a>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="PlaceCorrespondenceLatLonString">Место переписки (координаты (широта,долгота))</label>
+                                                        <input placeholder="54.923807, 52.255657" value="@(loc1)" type="text" class="form-control" id="PlaceCorrespondenceLatLonString" name="PlaceCorrespondenceLatLonString" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <h3>Населенный пункт</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="LocalityOffDeliveryTatar">Населенный пункт (по-татарски)</label>
+                                                        <input value="@(info!=null && info?.Attributes!=null?info.Attributes?.LocalityOffDeliveryTatar:string.Empty)" type="text" class="form-control" id="LocalityOffDeliveryTatar" name="LocalityOffDeliveryTatar" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="LocalityOffDeliveryRussian">Населенный пункт (по-русски)</label>
+                                                        <input value="@(info!=null && info?.Attributes!=null?info.Attributes.LocalityOffDeliveryRussian:string.Empty)" type="text" class="form-control" name="LocalityOffDeliveryRussian" id="LocalityOffDeliveryRussian" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="LocalityOffDeliveryEnglish">Населенный пункт (по-английски)</label>
+                                                        <input value="@(info!=null && info?.Attributes!=null?info.Attributes.LocalityOffDeliveryEnglish:string.Empty)" type="text" class="form-control" name="LocalityOffDeliveryEnglish" id="LocalityOffDeliveryEnglish" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <a target="_blank" href="https://yandex.ru/maps/">Открыть Yandex.Maps в новой вкладке</a>
+                                                </div>
+                                                @{
+                                                    var loc2 = string.Empty;
+                                                    if (info != null && info.Attributes != null)
+                                                    {
+                                                        if (info.Attributes.LocalityOffDeliveryLat != null && info.Attributes.LocalityOffDeliveryLon != null)
+                                                        {
+                                                            loc2 = string.Format("{0},{1}", info.Attributes.LocalityOffDeliveryLat?.ToString()?.Replace(",", "."), info.Attributes.LocalityOffDeliveryLon?.ToString()?.Replace(",", "."));
+                                                        }
+                                                    }
+
+                                                }
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="LocalityOffDeliveryLatLonString">Населенный пункт (откуда доставлена - координаты (широта,долгота))</label>
+                                                        <input placeholder="54.923807, 52.255657" value="@(loc2)" type="text" class="form-control" id="LocalityOffDeliveryLatLonString" name="LocalityOffDeliveryLatLonString" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="description">
+                                                Примечание эксперта
+                                            </label>
+                                            @{
+                                                if (info != null && info.UserExpert != null)
+                                                {
+                                                    if (info.UserExpert.UserId == userId)
+                                                    {
+                                                        <textarea name="CommentExpert" id="description" class="form-control" rows="4" cols="1"
+                                                                  placeholder="Примечание эксперта">@(info!=null && info.Attributes != null ? info?.Attributes.CommentExpert:string.Empty)</textarea>
+                                                    }
+                                                    else
+                                                    {
+                                                        <textarea disabled readonly name="CommentExpert" id="description" class="form-control" rows="4" cols="1"
+                                                                  placeholder="Примечание эксперта">@(info!=null && info.Attributes != null ? info?.Attributes.CommentExpert:string.Empty)</textarea>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <textarea disabled readonly name="CommentExpert" id="description" class="form-control" rows="4" cols="1"
+                                                              placeholder="Примечание эксперта">@(info!=null && info.Attributes != null ? info?.Attributes.CommentExpert:string.Empty)</textarea>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="CommentEditor">
+                                                Примечание суперэксперта
+                                            </label>
+                                            <textarea @(!isGrantUser ? "readonly disabled" : string.Empty) name="CommentEditor" id="CommentEditor" class="form-control" rows="4" cols="1"
+                                                      placeholder="Примечание суперэксперта">@(info!=null && info.Attributes!=null ? info?.Attributes.CommentEditor : string.Empty)</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="note"> Права доступа для книги (эксперт): </label>
+                                            @{
+                                                if (usersForControlBook != null && usersForControlBook.Any())
+                                                {
+                                                    var group = usersForControlBook?.GroupBy(c => new { c.Roles })?.OrderByDescending(c => c.Key.Roles).ToList();
+                                                    <select name="userId" required class="form-control">
+                                                        <option></option>
+                                                        @foreach (var g in group)
+                                                        {
+                                                            string groupStr = !string.IsNullOrEmpty(g.Key.Roles) ? g.Key.Roles : "Users";
+                                                            <optgroup label="@groupStr">@groupStr</optgroup>
+                                                            foreach (var i in g)
+                                                            {
+                                                                if (info != null && info.UserExpert != null)
+                                                                {
+                                                                    if (info.UserExpert.UserId == i.UserId)
+                                                                    {
+                                                                        <option selected value="@i.UserId">@i.UserName (@i.FirstName)</option>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="@i.UserId">@i.UserName (@i.FirstName)</option>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@i.UserId">@i.UserName (@i.FirstName)</option>
+                                                                }
+
+                                                            }
+                                                        }
+                                                    </select>
+                                                }
+                                                else
+                                                {
+                                                    <div class="alert alert-success" role="alert"><i class="fa fa-lock" aria-hidden="true"></i> Книга доступна только Вам и редакторам</div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Опубликовать</label>
+                                        <div class="flx">
+                                            <input type="checkbox" name="visible" id="visibleBook" @(info != null ? info.Visible ? "checked" : string.Empty : string.Empty) />
+                                            <label for="visibleBook" style="@(isExrimistStatements?"pointer-events:none;opacity:0.3;":string.Empty)">Checkbox</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary"><i class="fa fa-floppy-o" aria-hidden="true"></i> Сохранить</button>
+                                if (info != null)
+                                {
+                                    <button type="button" onclick="removeOperation(1,@info.BookId)" class="btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i> Удалить</button>
+                                }
+                            }
+                        </div>
+                        @* Загрузка сканов *@
+                        @{
+                            if (isGrantUser)
+                            {
+                                <div class="tab-pane" id="attach" role="tabpanel">
+                                    <div>
+                                        @if (info != null)
+                                        {
+                                            <div class="alert alert-info alert-dismissible" role="alert">
+                                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                Загрузка файла(ов) начинается автоматически, после выбора.
+                                            </div>
+
+                                            <div class="form-control">
+                                                <p><strong>Вариант загрузки:</strong></p>
+                                                <div id="param_loader">
+                                                    <input type="radio" data-type="1" id="img_down" name="param_loader" value="1">
+                                                    <label for="img_down">Загрузка изображений (формат графических файлов)</label>
+                                                </div>
+                                                <div>
+                                                    <input type="radio" data-type="2" id="zip_down" name="param_loader" value="2">
+                                                    <label for="zip_down">Загрузка ZIP архива(7-Zip)</label>
+                                                </div>
+                                            </div>
+                                            <br />
+                                            <article id="param_uploader_1" class="c-card c-card--external c-card--flight c-flight-card" style="display:none;" layout="row">
+                                                <div class="c-card__body" layout="row nowrap" xs-layout="row wrap" flex>
+                                                    <div id="fileuploader">Загрузить страницы</div>
+                                                </div>
+                                            </article>
+                                            <article id="param_uploader_2" class="c-card c-card--external c-card--flight c-flight-card" style="display:none;" layout="row">
+                                                <div class="c-card__body" layout="row nowrap" xs-layout="row wrap" flex>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <div class="progress" id="progress_zip" style="display:none;">
+                                                                <div class="progress-bar progress-bar-striped progress-bar-animated bar"></div>
+                                                                <div class="percent">0%</div>
+                                                            </div>
+                                                            <div id="status"></div>
+                                                            <form class="form-group" action="@Url.Action("uploadZIP", "TimesMachine")" id="zipUploader" method="post" enctype="multipart/form-data">
+                                                                <input type="hidden" name="i" value="@info.BookId" />
+                                                                <input id="inputZIPFile" style="background: #2f8ab9; color: white;margin-bottom: 5px;" class="form-control" type="file" accept=".zip,.7zip" name="file">
+                                                                <button class="btn btn-primary" type="submit" id="uploadZIP_btn"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Начать загрузку ZIP</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </article>
+                                        }
+                                        else
+                                        {
+                                            <article class="c-card c-card--external c-card--flight c-flight-card" layout="row">
+                                                <div class="c-card__body" layout="row nowrap" xs-layout="row wrap" flex>
+
+                                                    <div class="alert alert-danger alert-dismissible" role="alert">
+                                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                        Прежде, чем загружать страницы (сканы), необходимо сохранить книгу
+                                                    </div>
+
+                                                </div>
+                                            </article>
+                                        }
+                                        @if (info != null)
+                                        {
+                                            <br />
+                                            <div>
+                                                <div class="panel panel-default">
+                                                    <div class="list-group" id="prev_images">
+                                                        @if (info.Pages != null && info.Pages.Any())
+                                                        {
+                                                            string prefics = "small_";
+                                                            <table class="dataTable no-footer" role="grid">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <td class="l" colspan="4">
+                                                                            <i class="fa fa-folder-open-o" aria-hidden="true"></i> @pathBook
+                                                                        </td>
+                                                                    </tr>
+                                                                    @* Выборочное оставление изображений *@
+                                                                    <tr>
+                                                                        <td class="l" colspan="4">
+                                                                            <div class="dropdown">
+                                                                                <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                                    <i class="fa fa-scissors" aria-hidden="true"></i>
+                                                                                </button>
+                                                                                <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                                                                                    <a class="dropdown-item" onclick="cutOptionFunction(true)">Выборочное оставление изображений</a>
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr id="cutOptions" style="display:none;">
+                                                                        <td class="l" colspan="4">
+                                                                            <div class="alert alert-default alert-dismissible" role="alert">
+                                                                                <center>Установите интервал страниц <strong>'С-По'</strong>, которые необходимо оставить (<strong>включительно</strong>)</center>
+                                                                                <div class="container">
+                                                                                    <input type="text" class="js-range-slider" id="cutSliderPage" name="cutSliderPage" value="" onchange="updateCutRowTables()" />
+                                                                                    <div class="form-group">
+                                                                                        <center>
+                                                                                            <input type="button" class="btn btn-primary" onclick="cutImagesApply()" value="Оставить изображения только в указанном диапазоне" />
+                                                                                            <input type="button" onclick="cutOptionFunction(false)" class="btn btn-default" value="Закрыть" />
+                                                                                        </center>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr id="pagesLoadingIndicator" style="display:none;">
+                                                                        <td class="l" colspan="4">
+                                                                            <div class="progress">
+                                                                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody id="pagesTableRows">
+                                                                    @{
+                                                                        //итератор последовательный
+                                                                        int i = 1;
+                                                                        //итератор, только для видимых
+                                                                        int iVisIterator = 1;
+                                                                        //проверка на удаленные страницы
+                                                                        bool isHaveRemoved = false;
+                                                                        if (info != null && info?.Pages != null && info.Pages.Any())
+                                                                        {
+                                                                            isHaveRemoved = info.Pages.Where(c => !c.Visible).Any();
+                                                                        }
+                                                                    }
+                                                                    @foreach (var p in info.Pages)
+                                                                    {
+                                                                        <tr data-enum="@i" class="page_image @(p.Visible?" cutImgVisible":"deletePage hide")" id="rect_@p.Id">
+                                                                            <td>
+                                                                                <label class="prevCheck" title="Установить в качестве обложки">
+                                                                                    <i class="fa fa-picture-o" aria-hidden="true"></i>
+                                                                                    @{
+                                                                                        var isChecked = false;
+                                                                                        if (!string.IsNullOrEmpty(info.BookCoverFileName))
+                                                                                        {
+                                                                                            if (p.FileName == info.BookCoverFileName.Replace("small_", string.Empty))
+                                                                                            {
+                                                                                                isChecked = true;
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                    <input @(isChecked ? "checked" : string.Empty) page-id="@p.Id" book-id="@info.BookId" data-src="small_@p.FileName" type="checkbox" />
+                                                                                </label>
+                                                                                <img loading="lazy" src="@pathBook@prefics@p.FileName" />
+                                                                            </td>
+                                                                            <td class="l">
+                                                                                <a target="_blank" href="@Url.Action("View", "TimesMachine", new { @BookId = info.BookId, @pageId = p.Id })">
+                                                                                    <div title="Номер страницы (порядковый)" class="wrap"><strong>@Html.Raw(string.Format("стр. <span class=\"img_page iteratorCutUpdate\">{0}</span>", iVisIterator))</strong></div>
+                                                                                    <div title="Истинный номер страницы, который был присвоен в процессе загрузки" class="wrap pageRealNumber" style="display:none;">@Html.Raw(string.Format("стр. <span class=\"img_page\">{0}</span>", i))</div>
+                                                                                    <span class="wrap">@p.FileName</span>
+                                                                                </a>
+                                                                                <p>@(p.DateTimeCreated.HasValue ? string.Format("добавлена: {0}", p.DateTimeCreated.Value) : string.Empty)</p>
+                                                                            </td>
+                                                                            <td class="l">
+                                                                                @{
+                                                                                    if (p.RectAreasViewer != null && p.RectAreasViewer.Any())
+                                                                                    {
+                                                                                        <span>@p.RectAreasViewer.Count() (кол-во фрагментов)</span>
+                                                                                    }
+                                                                                }
+                                                                            </td>
+                                                                            <td class="l">
+                                                                                <div class="dropdown">
+                                                                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                                        <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                                                                    </button>
+                                                                                    <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                                                                                        <a class="dropdown-item" href="@Url.Action("Edit", new { @BookId = info.BookId, pageId = p.Id })">Изменить</a>
+                                                                                        <a class="dropdown-item" onclick="removeOperation(2,@p.Id)">Удалить</a>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        i++;
+                                                                        if (p.Visible)
+                                                                        {
+                                                                            iVisIterator++;
+                                                                        }
+                                                                    }
+                                                                </tbody>
+                                                            </table>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+
+                                    </div>
+                                </div>
+                            }
+                        }
+                        @* Справочники *@
+                        @{
+                            if (isGrantUser)
+                            {
+                                <div class="tab-pane" id="directory" role="tabpanel">
+                                    <div class="accordion form-group">
+                                        <div class="accordion__item">
+                                            <div class="accordion__title">
+                                                <div class="accordion__arrow"><span class="accordion__arrow-item ">+</span></div>
+                                                <span class="accordion__title-text">Языки</span>
+                                            </div>
+                                            <div class="accordion__content">
+                                                @* Справочник языков *@
+                                                <table class="table" id="table-languages">
+                                                    @{
+                                                        <thead class="table-dark">
+                                                            <tr><td colspan="3"><h4><label>Справочник языков</label></h4></td></tr>
+                                                            <tr>
+                                                                <td>LanguageTableListId</td>
+                                                                <td>Название языка</td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @if (langList != null && langList.Any())
+                                                            {
+                                                                langList = langList?.OrderBy(c => c.LanguageTableName)?.ToList();
+                                                                foreach (var i in langList)
+                                                                {
+                                                                    <tr id="lang_@i.LanguageTableListId">
+                                                                        <td><span>@i.LanguageTableListId</span></td>
+                                                                        <td><input required type="text" class="form-control" value="@i.LanguageTableName" placeholder="Название" /></td>
+                                                                        <td>
+                                                                            <div class="btn-group pull-right">
+                                                                                <button type="button" onclick="langClass.update(@i.LanguageTableListId)">
+                                                                                    <span class="fa fa-check">
+                                                                                    </span>
+                                                                                </button>
+                                                                                <button type="button" onclick="langClass.delete(@i.LanguageTableListId)">
+                                                                                    <span class="fa fa-trash">
+                                                                                    </span>
+                                                                                </button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    }
+                                                    <tr>
+                                                        <td colspan="3">
+                                                            <h4><label>Добавление</label></h4>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td></td>
+                                                        <td>
+                                                            <input id="new_lang" type="text" placeholder="Название языка" class="form-control" />
+                                                        </td>
+                                                        <td>
+                                                            <button class="btn btn-primary" onclick="langClass.add($('#new_lang').val())">Добавить запись</button>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        @* Регионы *@
+                                        <div class="accordion__item">
+                                            <div class="accordion__title">
+                                                <div class="accordion__arrow"><span class="accordion__arrow-item ">+</span></div>
+                                                <span class="accordion__title-text">Регионы</span>
+                                            </div>
+                                            <div class="accordion__content">
+                                                @* Справочник типов *@
+                                                <table class="table" id="table-regions">
+                                                    @{
+                                                        <thead class="table-dark">
+                                                            <tr><td colspan="3"><h4><label>Справочник регионов</label></h4></td></tr>
+                                                            <tr>
+                                                                <td>RegionListId</td>
+                                                                <td>Название</td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @if (regionsList != null && regionsList.Any())
+                                                            {
+                                                                foreach (var i in regionsList)
+                                                                {
+                                                                    <tr id="region_@i.RegionsId">
+                                                                        <td><span>@i.RegionsId</span></td>
+                                                                        <td><input required type="text" class="form-control" value="@i.RegionName" placeholder="Регион" /></td>
+                                                                        <td>
+                                                                            <div class="btn-group pull-right">
+                                                                                <button type="button" onclick="regionClass.update(@i.RegionsId)">
+                                                                                    <span class="fa fa-check">
+                                                                                    </span>
+                                                                                </button>
+                                                                                <button type="button" onclick="regionClass.delete(@i.RegionsId)">
+                                                                                    <span class="fa fa-trash">
+                                                                                    </span>
+                                                                                </button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    }
+                                                    <tr>
+                                                        <td colspan="3">
+                                                            <h4><label>Добавление</label></h4>
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="new_region">
+                                                        <td></td>
+                                                        <td>
+                                                            <input type="text" placeholder="Название региона" class="form-control" />
+                                                        </td>
+                                                        <td>
+                                                            <button class="btn btn-primary" onclick="regionClass.add(null, $('#new_region'))">Добавить запись</button>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="accordion__item">
+                                            <div class="accordion__title">
+                                                <div class="accordion__arrow"><span class="accordion__arrow-item ">+</span></div>
+                                                <span class="accordion__title-text">Состояния</span>
+                                            </div>
+                                            <div class="accordion__content">
+                                                @* Справочник состояний *@
+                                                <table class="table" id="table-state">
+                                                    @{
+                                                        <thead class="table-dark">
+                                                            <tr><td colspan="3"><h4><label>Справочник состояний</label></h4></td></tr>
+                                                            <tr>
+                                                                <td>StateId</td>
+                                                                <td>Название состояния</td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @if (statesList != null && statesList.Any())
+                                                            {
+                                                                foreach (var i in statesList)
+                                                                {
+                                                                    <tr id="state_@i.StatesId">
+                                                                        <td><span>@i.StatesId</span></td>
+                                                                        <td><input required type="text" class="form-control" value="@i.StateDescription" placeholder="Состояние" /></td>
+                                                                        <td>
+                                                                            <div class="btn-group pull-right">
+                                                                                <button type="button" onclick="stateClass.update(@i.StatesId)">
+                                                                                    <span class="fa fa-check">
+                                                                                    </span>
+                                                                                </button>
+                                                                                <button type="button" onclick="stateClass.delete(@i.StatesId)">
+                                                                                    <span class="fa fa-trash">
+                                                                                    </span>
+                                                                                </button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    }
+                                                    <tr>
+                                                        <td colspan="3">
+                                                            <h4><label>Добавление</label></h4>
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="new_state">
+                                                        <td></td>
+                                                        <td>
+                                                            <input type="text" placeholder="Название состояния" class="form-control" />
+                                                        </td>
+                                                        <td>
+                                                            <button class="btn btn-primary" onclick="stateClass.add(null,$('#new_state'))">Добавить запись</button>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="accordion__item">
+                                            <div class="accordion__title">
+                                                <div class="accordion__arrow"><span class="accordion__arrow-item ">+</span></div>
+                                                <span class="accordion__title-text">Тематики</span>
+                                            </div>
+                                            <div class="accordion__content">
+                                                @* Справочник тематик *@
+                                                <table class="table" id="table-themes">
+                                                    @{
+                                                        <thead class="table-dark">
+                                                            <tr><td colspan="5"><h4><label>Справочник тематик</label></h4></td></tr>
+                                                            <tr>
+                                                                <td>ThemesLanguagesListId</td>
+                                                                <td>На русском</td>
+                                                                <td>На английском</td>
+                                                                <td>На арабском</td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @if (themesList != null && themesList.Any())
+                                                            {
+                                                                foreach (var i in themesList)
+                                                                {
+                                                                    <tr id="theme_@i.ThemesLanguagesListId">
+                                                                        <td><span>@i.ThemesLanguagesListId</span></td>
+                                                                        <td><input required type="text" class="form-control" value="@i.DescriptionThemeRussian" placeholder="На русском" /></td>
+                                                                        <td><input required type="text" class="form-control" value="@i.DescriptionThemeEnglish" placeholder="На английском" /></td>
+                                                                        <td><input required type="text" class="form-control" value="@i.DescriptionThemeArabic" placeholder="На арабском" /></td>
+                                                                        <td>
+                                                                            <div class="btn-group pull-right">
+                                                                                <button type="button" onclick="themeClass.update(@i.ThemesLanguagesListId)">
+                                                                                    <span class="fa fa-check">
+                                                                                    </span>
+                                                                                </button>
+                                                                                <button type="button" onclick="themeClass.delete(@i.ThemesLanguagesListId)">
+                                                                                    <span class="fa fa-trash">
+                                                                                    </span>
+                                                                                </button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    }
+                                                    <tr>
+                                                        <td colspan="5">
+                                                            <h4><label>Добавление</label></h4>
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="theme_new">
+                                                        <td></td>
+                                                        <td>
+                                                            <input id="theme_ru" type="text" placeholder="На русском" class="form-control" />
+                                                        </td>
+                                                        <td>
+                                                            <input id="theme_en" type="text" placeholder="На английском" class="form-control" />
+                                                        </td>
+                                                        <td>
+                                                            <input id="theme_ar" type="text" placeholder="На арабском" class="form-control" />
+                                                        </td>
+                                                        <td>
+                                                            <button class="btn btn-primary" onclick="themeClass.add(null,$('#theme_new'))">Добавить запись</button>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="accordion__item">
+                                            <div class="accordion__title">
+                                                <div class="accordion__arrow"><span class="accordion__arrow-item ">+</span></div>
+                                                <span class="accordion__title-text">Типы</span>
+                                            </div>
+                                            <div class="accordion__content">
+                                                @* Справочник типов *@
+                                                <table class="table" id="table-types">
+                                                    @{
+                                                        <thead class="table-dark">
+                                                            <tr><td colspan="5"><h4><label>Справочник типов</label></h4></td></tr>
+                                                            <tr>
+                                                                <td>TypesLanguagesListId</td>
+                                                                <td>На русском</td>
+                                                                <td>На английском</td>
+                                                                <td>На арабском</td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @if (typesList != null && typesList.Any())
+                                                            {
+                                                                foreach (var i in typesList)
+                                                                {
+                                                                    <tr id="type_@i.TypesLanguagesListId">
+                                                                        <td><span>@i.TypesLanguagesListId</span></td>
+                                                                        <td><input required type="text" class="form-control" value="@i.DescriptionTypeRussian" placeholder="На русском" /></td>
+                                                                        <td><input required type="text" class="form-control" value="@i.DescriptionTypeEnglish" placeholder="На английском" /></td>
+                                                                        <td><input required type="text" class="form-control" value="@i.DescriptionTypeArabic" placeholder="На арабском" /></td>
+                                                                        <td>
+                                                                            <div class="btn-group pull-right">
+                                                                                <button type="button" onclick="typesClass.update(@i.TypesLanguagesListId)">
+                                                                                    <span class="fa fa-check">
+                                                                                    </span>
+                                                                                </button>
+                                                                                <button type="button" onclick="typesClass.delete(@i.TypesLanguagesListId)">
+                                                                                    <span class="fa fa-trash">
+                                                                                    </span>
+                                                                                </button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    }
+                                                    <tr>
+                                                        <td colspan="5">
+                                                            <h4><label>Добавление</label></h4>
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="new_type">
+                                                        <td></td>
+                                                        <td>
+                                                            <input id="type_ru" type="text" placeholder="На русском" class="form-control" />
+                                                        </td>
+                                                        <td>
+                                                            <input id="type_en" type="text" placeholder="На английском" class="form-control" />
+                                                        </td>
+                                                        <td>
+                                                            <input id="type_ar" type="text" placeholder="На арабском" class="form-control" />
+                                                        </td>
+                                                        <td>
+                                                            <button class="btn btn-primary" onclick="typesClass.add(null,$('#new_type'))">Добавить запись</button>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        @* Коллекции *@
+                                        <div class="accordion__item">
+                                            <div class="accordion__title">
+                                                <div class="accordion__arrow"><span class="accordion__arrow-item ">+</span></div>
+                                                <span class="accordion__title-text">Коллекции</span>
+                                            </div>
+                                            <div class="accordion__content">
+                                                @* Справочник коллекций *@
+                                                <table class="table" id="table-collections">
+                                                    @{
+                                                        <thead class="table-dark">
+                                                            <tr><td colspan="3"><h4><label>Справочник коллекций</label></h4></td></tr>
+                                                            <tr>
+                                                                <td>CollectionId</td>
+                                                                <td>Название</td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @if (collectionsList != null && collectionsList.Any())
+                                                            {
+                                                                foreach (var i in collectionsList)
+                                                                {
+                                                                    <tr id="collection_@i.CollectionId">
+                                                                        <td><span>@i.CollectionId</span></td>
+                                                                        <td><input required type="text" class="form-control" value="@i.CollectionName" placeholder="Коллекция" /></td>
+                                                                        <td>
+                                                                            <div class="btn-group pull-right">
+                                                                                <button type="button" onclick="collectionsClass.update(@i.CollectionId)">
+                                                                                    <span class="fa fa-check">
+                                                                                    </span>
+                                                                                </button>
+                                                                                <button type="button" onclick="collectionsClass.delete(@i.CollectionId)">
+                                                                                    <span class="fa fa-trash">
+                                                                                    </span>
+                                                                                </button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    }
+                                                    <tr>
+                                                        <td colspan="3">
+                                                            <h4><label>Добавление</label></h4>
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="new_collection">
+                                                        <td></td>
+                                                        <td>
+                                                            <input type="text" placeholder="Название коллекции" class="form-control" />
+                                                        </td>
+                                                        <td>
+                                                            <button class="btn btn-primary" onclick="collectionsClass.add(null,$('#new_collection'))">Добавить запись</button>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="~/Content/Zoom/medium-zoom.min.js"></script>
+    <script>
+        var uploader;
+        //http://hayageek.com/docs/jquery-upload-file.php
+        function initUploadFile() {
+            uploader = $("#fileuploader").uploadFile({
+                url: "/TimesMachine/uploadPage",
+                fileName: "file",
+                formData: { i: $('#BookId').val() },
+                sequential: true,
+                sequentialCount: 1,
+                showProgress: true,
+                showPreview: true,
+                previewWidth: '30px',
+                multiple: true,
+                acceptFiles: "image/*",
+                onSelect: function (files) {
+                    alert("Начало загрузки... Ожидайте конца выполнения...");
+                },
+                afterUploadAll: function (obj) {
+                    alert('Файлы загружены. Перезагружаем страницу...');
+                    location.reload();
+                },
+                //location
+                dragDropStr: "<span>файлы изображений</span>",
+                uploadStr: "Выбрать",
+                cancelStr: "Отменить"
+            });
+        }
+        function initAccordion() {
+            $(".accordion__title").on("click", function (e) {
+                e.preventDefault();
+                var $this = $(this);
+                if (!$this.hasClass("accordion-active")) {
+                    $(".accordion__content").slideUp(400);
+                    $(".accordion__title").removeClass("accordion-active");
+                    $('.accordion__arrow').removeClass('accordion__rotate');
+                }
+                $this.toggleClass("accordion-active");
+                $this.next().slideToggle();
+                $('.accordion__arrow', this).toggleClass('accordion__rotate');
+            });
+        }
+        function initSelectable() {
+            $('select').select2({});
+            //tags variant
+            $('[name="InventoryCollectedBook"],[name="CollectedNameText"]').select2({ tags: true });
+        }
+        function initJijriCalendar() {
+            $('.hijriCal').hijriDatePicker({
+                hijri: true,
+                showTodayButton: true,
+                showClose: true,
+                showClear: true,
+                icons: {
+                    previous: '<',
+                    next: '>',
+                    today: 'сегодня',
+                    clear: 'очистить',
+                    close: 'закрыть'
+                },
+                hijriText: "Хиджры",
+                gregorianText: "Григор.",
+                format: 'DD.MM.YYYY',
+                hijriFormat: 'iDD.iMM.iYYYY',
+                locale: 'ru-RU'
+
+            });
+        }
+        //Справочники
+        function call(id, method, data, type) {
+            console.log(method + ' ' + type);
+            $.ajax({
+                type: "POST",
+                url: '/TimesMachine/' + method,
+                data: data,
+                dataType: 'json',
+                success: function (data) {
+                    if (type == 'Add') {
+                        switch (method) {
+                            case 'LangAction':
+                                {
+                                    langClass.getAll();
+                                } break;
+                            case 'ThemeAction':
+                                {
+                                    themeClass.getAll();
+                                } break;
+                            case 'TypeAction':
+                                {
+                                    typesClass.getAll();
+                                } break;
+                            case 'StateAction':
+                                {
+                                    stateClass.getAll();
+                                } break;
+                            case 'RegionAction':
+                                {
+                                    regionClass.getAll();
+                                } break;
+                            case 'CollectionAction':
+                                {
+                                    collectionsClass.getAll();
+                                } break;
+                        }
+                        console.log(data);
+                        if (data != null) {
+                            alert('Значение добавлено в справочник: Id = ' + data.Id);
+                            var select = $(id);
+                            var isMulti = $(select).prop('multiple');
+                            if (!isMulti) {
+                                $(id).find(':selected').prop('value', data.Id);
+                            }
+                            else {
+                                //Удаляем вставленное значение, где нет id
+                                var el = $(id).find('[value="' + data.Value + '"]');
+                                $(el).remove();
+
+                                var newOption = new Option(data.Value, data.Id, true, true);
+                                // Append it to the select
+                                $(id).append(newOption).trigger('change');
+                            }
+                        }
+                    }
+                    else {
+                        if (method == 'LangAction') {
+                            if (type == 'GetAll') {
+                                //Обновление select
+                                alert('Обновлено');
+                                //get selected
+                                var values = $(id).val();
+                                $(id).empty();
+                                var rowStr = '';
+                                $(data).each(function () {
+                                    var newOption = new Option(this.LanguageTableName, this.LanguageTableListId, true, true);
+                                    $(id).append(newOption);
+                                    rowStr += '<tr id="lang_' + this.LanguageTableListId + '"> <td><span>' + this.LanguageTableListId + '</span></td> <td><input required="" type="text" class="form-control" value="' + this.LanguageTableName + '" placeholder="Название"></td> <td> <div class="btn-group pull-right"> <button type="button" onclick="langClass.update(' + this.LanguageTableListId + ')"> <span class="fa fa-check"> </span> </button> <button type="button" onclick="langClass.delete(' + this.LanguageTableListId + ')"> <span class="fa fa-trash"> </span> </button> </div> </td> </tr>';
+                                });
+                                $('#table-languages tbody:first').empty().append(rowStr);
+                                $(id).val(values);
+                                $(id).trigger('change');
+                            }
+                            if (type == 'Update') {
+                                if (data) {
+                                    alert('Запись успешно обновлена');
+                                }
+                                else {
+                                    alert('Не удалось обновить запись. Пожалуйста, повторите действие.');
+                                }
+                                console.log(data);
+                                langClass.getAll();
+                            }
+                            if (type == 'Delete') {
+                                if (data) {
+                                    $(id).hide('100');
+                                }
+                                else {
+                                    alert('Не удалось удалить запись. Пожалуйста, повторите действие.');
+                                }
+                                console.log(data);
+                                langClass.getAll();
+                            }
+                        }
+                        if (method == 'ThemeAction') {
+                            if (type == 'GetAll') {
+                                //Обновление select
+                                alert('Обновлено');
+                                //get selected
+                                var values = $(id).val();
+                                console.log(values);
+                                $(id).empty();
+                                var rowStr = '';
+                                $(data).each(function (f) {
+                                    console.log(f);
+                                    var newOption = new Option(this.DescriptionThemeRussian + '/' + this.DescriptionThemeEnglish + '/' + this.DescriptionThemeArabic, this.ThemesLanguagesListId, true, true);
+                                    $(id).append(newOption);
+                                    rowStr += '<tr id="theme_' + this.ThemesLanguagesListId + '"> <td><span>' + this.ThemesLanguagesListId + '</span></td> <td><input required="" type="text" class="form-control" value="' + this.DescriptionThemeRussian + '" placeholder="На русском"></td> <td><input required="" type="text" class="form-control" value="' + this.DescriptionThemeEnglish + '" placeholder="На английском"></td> <td><input required="" type="text" class="form-control" value="' + this.DescriptionThemeArabic + '" placeholder="На арабском"></td> <td> <div class="btn-group pull-right"> <button type="button" onclick="themeClass.update(' + this.ThemesLanguagesListId + ')"> <span class="fa fa-check"> </span> </button> <button type="button" onclick="themeClass.delete(' + this.ThemesLanguagesListId + ')"> <span class="fa fa-trash"> </span> </button> </div> </td> </tr>';
+                                });
+                                $('#table-themes tbody:first').empty().append(rowStr);
+                                $(id).val(values);
+                                $(id).trigger('change');
+                            }
+                            if (type == 'Update') {
+                                if (data) {
+                                    alert('Запись успешно обновлена');
+                                }
+                                else {
+                                    alert('Не удалось обновить запись. Пожалуйста, повторите действие.');
+                                }
+                                console.log(data);
+                                themeClass.getAll();
+                            }
+                            if (type == 'Delete') {
+                                if (data) {
+                                    $(id).hide('100');
+                                    langClass.getAll();
+                                }
+                                else {
+                                    alert('Не удалось удалить запись. Пожалуйста, повторите действие.');
+                                }
+                                console.log(data);
+                                themeClass.getAll();
+                            }
+                        }
+                        if (method == 'TypeAction') {
+                            if (type == 'GetAll') {
+                                //Обновление select
+                                alert('Обновлено');
+                                //get selected
+                                var values = $(id).val();
+                                console.log(values);
+                                $(id).empty();
+                                var rowStr = '';
+                                console.log('typesList', data);
+                                $(data).each(function (f) {
+                                    var newOption = new Option(this.DescriptionTypeRussian + '/' + this.DescriptionTypeEnglish + '/' + this.DescriptionTypeArabic, this.TypesLanguagesListId, true, true);
+                                    $(id).append(newOption);
+                                    rowStr += '<tr id="type_' + this.TypesLanguagesListId + '"> <td><span>' + this.TypesLanguagesListId + '</span></td> <td><input required="" type="text" class="form-control" value="' + this.DescriptionTypeRussian + '" placeholder="На русском"></td> <td><input required="" type="text" class="form-control" value="' + this.DescriptionTypeEnglish + '" placeholder="На английском"></td> <td><input required="" type="text" class="form-control" value="' + this.DescriptionTypeArabic + '" placeholder="На арабском"></td> <td> <div class="btn-group pull-right"> <button type="button" onclick="typesClass.update(' + this.TypesLanguagesListId + ')"> <span class="fa fa-check"> </span> </button> <button type="button" onclick="typesClass.delete(' + this.TypesLanguagesListId + ')"> <span class="fa fa-trash"> </span> </button> </div> </td> </tr>';
+                                });
+                                $('#table-types tbody:first').empty().append(rowStr);
+                                $(id).val(values);
+                                $(id).trigger('change');
+                            }
+                            if (type == 'Update') {
+                                if (data) {
+                                    alert('Запись успешно обновлена');
+                                }
+                                else {
+                                    alert('Не удалось обновить запись. Пожалуйста, повторите действие.');
+                                }
+                                console.log(data);
+                                typesClass.getAll();
+                            }
+                            if (type == 'Delete') {
+                                if (data) {
+                                    $(id).hide('100');
+                                }
+                                else {
+                                    alert('Не удалось удалить запись. Пожалуйста, повторите действие.');
+                                }
+                                console.log(data);
+                                typesClass.getAll();
+                            }
+                        }
+                        if (method == 'StateAction') {
+                            if (type == 'GetAll') {
+                                //Обновление select
+                                alert('Обновлено');
+                                //get selected
+                                var values = $(id).val();
+                                console.log(values);
+                                $(id).empty();
+                                var rowStr = '';
+                                $(data).each(function (f) {
+                                    console.log(f);
+                                    var newOption = new Option(this.StateDescription, this.StatesId, true, true);
+                                    rowStr += '<tr id="state_' + this.StatesId + '"> <td><span>' + this.StatesId + '</span></td> <td><input required="" type="text" class="form-control" value="' + this.StateDescription + '" placeholder="Состояние"></td> <td> <div class="btn-group pull-right"> <button type="button" onclick="stateClass.update(' + this.StatesId + ')"> <span class="fa fa-check"> </span> </button> <button type="button" onclick="stateClass.delete(' + this.StatesId + ')"> <span class="fa fa-trash"> </span> </button> </div> </td> </tr>';
+                                    $(id).append(newOption);
+                                });
+                                $('#table-state tbody:first').empty().append(rowStr);
+                                $(id).val(values);
+                                $(id).trigger('change');
+                            }
+                            if (type == 'Update') {
+                                if (data) {
+                                    alert('Запись успешно обновлена');
+                                }
+                                else {
+                                    alert('Не удалось обновить запись. Пожалуйста, повторите действие.');
+                                }
+                                stateClass.getAll();
+                                console.log(data);
+                            }
+                            if (type == 'Delete') {
+                                if (data) {
+                                    $(id).hide('100');
+                                }
+                                else {
+                                    alert('Не удалось удалить запись. Пожалуйста, повторите действие.');
+                                }
+                                console.log(data);
+                                stateClass.getAll();
+                            }
+                        }
+                        if (method == 'RegionAction') {
+                            if (type == 'GetAll') {
+                                //Обновление select
+                                alert('Обновлено');
+                                //get selected
+                                var values = $(id).val();
+                                console.log(values);
+                                $(id).empty();
+                                var rowStr = '';
+                                $(data).each(function (f) {
+                                    console.log(f);
+                                    var newOption = new Option(this.RegionName, this.RegionsId, true, true);
+                                    rowStr += '<tr id="region_' + this.RegionsId + '"> <td><span>' + this.RegionsId + '</span></td> <td><input required="" type="text" class="form-control" value="' + this.RegionName + '" placeholder="Регион"></td> <td> <div class="btn-group pull-right"> <button type="button" onclick="regionClass.update(' + this.RegionsId + ')"> <span class="fa fa-check"> </span> </button> <button type="button" onclick="regionClass.delete(' + this.RegionsId + ')"> <span class="fa fa-trash"> </span> </button> </div> </td> </tr>';
+                                    $(id).append(newOption);
+                                });
+                                $('#table-regions tbody:first').empty().append(rowStr);
+                                $(id).val(values);
+                                $(id).trigger('change');
+                            }
+                            if (type == 'Update') {
+                                if (data) {
+                                    alert('Запись успешно обновлена');
+                                }
+                                else {
+                                    alert('Не удалось обновить запись. Пожалуйста, повторите действие.');
+                                }
+                                regionClass.getAll();
+                                console.log(data);
+                            }
+                            if (type == 'Delete') {
+                                if (data) {
+                                    $(id).hide('100');
+                                }
+                                else {
+                                    alert('Не удалось удалить запись. Пожалуйста, повторите действие.');
+                                }
+                                console.log(data);
+                                regionClass.getAll();
+                            }
+                        }
+                        if (method == 'CollectionAction') {
+                            if (type == 'GetAll') {
+                                //Обновление select
+                                alert('Обновлено');
+                                //get selected
+                                var values = $(id).val();
+                                console.log(values);
+                                $(id).empty();
+                                var rowStr = '';
+                                $(data).each(function (f) {
+                                    console.log(f);
+                                    var newOption = new Option(this.CollectionName, this.CollectionId, true, true);
+                                    rowStr += '<tr id="collection_' + this.CollectionId + '"> <td><span>' + this.CollectionId + '</span></td> <td><input required="" type="text" class="form-control" value="' + this.CollectionName + '" placeholder="Коллекция"></td> <td> <div class="btn-group pull-right"> <button type="button" onclick="collectionsClass.update(' + this.CollectionId + ')"> <span class="fa fa-check"> </span> </button> <button type="button" onclick="collectionsClass.delete(' + this.CollectionId + ')"> <span class="fa fa-trash"> </span> </button> </div> </td> </tr>';
+                                    $(id).append(newOption);
+                                });
+                                $('#table-collections tbody:first').empty().append(rowStr);
+                                $(id).val(values);
+                                $(id).trigger('change');
+                            }
+                            if (type == 'Update') {
+                                if (data) {
+                                    alert('Запись успешно обновлена');
+                                }
+                                else {
+                                    alert('Не удалось обновить запись. Пожалуйста, повторите действие.');
+                                }
+                                collectionsClass.getAll();
+                            }
+                            if (type == 'Delete') {
+                                if (data) {
+                                    $(id).hide('100');
+                                }
+                                else {
+                                    alert('Не удалось удалить запись. Пожалуйста, повторите действие.');
+                                }
+                                collectionsClass.getAll();
+                            }
+                        }
+                    }
+                }, error: function () {
+                }
+            });
+        }
+        //Язык
+        class Langs {
+            constructor() {
+                this.method = "LangAction";
+            }
+            delete(langId) {
+                var method = 'LangAction';
+                var data = { type: 'Delete', Id: langId };
+                call('#lang_' + langId, this.method, data, data.type);
+            }
+            add(Name) {
+                var data = { type: 'Add', name: Name };
+                call('#LangId', this.method, data, data.type);
+            }
+            update(langId) {
+                var val = $('#lang_' + langId).find('[type="text"]').val();
+                var data = { type: 'Update', Id: langId, name: val };
+                call(null, this.method, data, data.type);
+            }
+            getAll() {
+                var method = 'LangAction';
+                var data = { type: 'GetAll' };
+                call('#LangId', this.method, data, data.type);
+            }
+        }
+        //Состояние
+        class States {
+            constructor() {
+                this.method = "StateAction";
+            }
+            delete(stateId) {
+                var data = { type: 'Delete', Id: stateId };
+                call('#state_' + stateId, this.method, data, data.type);
+            }
+            add(Name, Id) {
+                var el = $(Id).find('[type="text"]');
+                var val = $(el[0]).val();
+                var data = { type: 'Add', name: val };
+                var type = "Add";
+                call(Id, this.method, data, type);
+            }
+            update(stateId) {
+                var id = stateId;
+                var val = $('#state_' + stateId).find('[type="text"]').val();
+                var data = { type: 'Update', Id: id, name: val };
+                call(null, this.method, data, data.type);
+            }
+            getAll(id) {
+                console.log('update State', id);
+                var data = { type: 'GetAll' };
+                call(id, this.method, data, data.type);
+            }
+        }
+        //Тематика
+        class Themes {
+            constructor() {
+                this.method = "ThemeAction";
+            }
+            delete(themeId) {
+                var method = 'ThemeAction';
+                var data = { type: 'Delete', Id: themeId };
+                call('#theme_' + themeId, this.method, data, data.type);
+            }
+            add(Name, Id) {
+                var el = $(Id).find('[type="text"]');
+                var ru = $(el[0]).val();
+                var en = $(el[1]).val();
+                var ar = $(el[2]).val();
+                var data = { type: 'Add', ru: ru, en: en, ar: ar };
+                var type = "Add";
+                call(Id, this.method, data, type);
+            }
+            update(themeId) {
+                var el = $('#theme_' + themeId).find('[type="text"]');
+                var ru = $(el[0]).val();
+                var en = $(el[1]).val();
+                var ar = $(el[2]).val();
+                var data = { type: 'Update', Id: themeId, ru: ru, en: en, ar: ar };
+                call(null, this.method, data, data.type);
+            }
+            getAll(id) {
+                console.log('update Theme', id);
+                var method = 'ThemeAction';
+                var data = { type: 'GetAll' };
+                call(id, this.method, data, data.type);
+            }
+        }
+        //Коллекция
+        class Collections {
+            constructor() {
+                this.method = "CollectionAction";
+            }
+            delete(collectionId) {
+                var data = { type: 'Delete', Id: collectionId };
+                call('#collection_' + collectionId, this.method, data, data.type);
+            }
+            add(Name, Id) {
+                var el = $(Id).find('[type="text"]');
+                var val = $(el[0]).val();
+                var data = { type: 'Add', name: val };
+                var type = "Add";
+                call(Id, this.method, data, type);
+            }
+            update(collectionId) {
+                var val = $('#collection_' + collectionId).find('[type="text"]').val();
+                var data = { type: 'Update', Id: collectionId, name: val };
+                call(null, this.method, data, data.type);
+            }
+            getAll(id) {
+                console.log('update Collection', id);
+                var data = { type: 'GetAll' };
+                call(id, this.method, data, data.type);
+            }
+        }
+        //Тип
+        class Types {
+            constructor() {
+                this.method = "TypeAction";
+            }
+            delete(typeId) {
+                var data = { type: 'Delete', Id: typeId };
+                call('#type_' + typeId, this.method, data, data.type);
+            }
+            add(Name, Id) {
+                var el = $(Id).find('[type="text"]');
+                var ru = $(el[0]).val();
+                var en = $(el[1]).val();
+                var ar = $(el[2]).val();
+                var data = { type: 'Add', ru: ru, en: en, ar: ar };
+                var type = "Add";
+                call(Id, this.method, data, type);
+            }
+            update(typeId) {
+                var el = $('#type_' + typeId).find('[type="text"]');
+                var ru = $(el[0]).val();
+                var en = $(el[1]).val();
+                var ar = $(el[2]).val();
+                var data = { type: 'Update', Id: typeId, ru: ru, en: en, ar: ar };
+                call(null, this.method, data, data.type);
+            }
+            getAll(id) {
+                console.log('update Type', id);
+                var data = { type: 'GetAll' };
+                call(id, this.method, data, data.type);
+            }
+        }
+        //Регион
+        class Regions {
+            constructor() {
+                this.method = "RegionAction";
+            }
+            delete(typeId) {
+                var data = { type: 'Delete', Id: typeId };
+                call('#region_' + typeId, this.method, data, data.type);
+            }
+            add(Name, Id) {
+                var el = $(Id).find('[type="text"]');
+                var val = $(el[0]).val();
+                var data = { type: 'Add', name: val };
+                var type = "Add";
+                call(Id, this.method, data, type);
+            }
+            update(regionId) {
+                var el = $('#region_' + regionId).find('[type="text"]');
+                var val = $(el[0]).val();
+                var data = { type: 'Update', Id: regionId, name: val };
+                call(null, this.method, data, data.type);
+            }
+            getAll(id) {
+                console.log('update Region', id);
+                var data = { type: 'GetAll' };
+                call(id, this.method, data, data.type);
+            }
+        }
+        var langClass, stateClass, themeClass, typesClass, regionClass, collectionsClass;
+        function initClasses() {
+            langClass = new Langs();
+            stateClass = new States();
+            themeClass = new Themes();
+            typesClass = new Types();
+            regionClass = new Regions();
+            collectionsClass = new Collections();
+        }
+        //add new event
+        function initAddNewRow() {
+            $('#add_lang').on('click', function () {
+                var id = 'lang_' + new Date().valueOf();
+                var table = $('#table-languages tbody:first');
+                var stroke = '<tr id="' + id + '" style="background-color: #d9d9d9;"><td></td><td><input required="" type="text" class="form-control" placeholder="Название"></td><td><input required="" type="number" class="form-control" placeholder="LangId"></td><td><button type="button" class="btn btn-sm btn-default" onclick="rowSave("' + id + '");"> <span class="fa fa-check"> </span> </button></td></tr>'
+                $(table).append(stroke);
+            });
+        }
+        function init_uploaderZIP() {
+            var bar = $('.bar');
+            var percent = $('.percent');
+            var status = $('#status');
+            var btn = $('#uploadZIP_btn');
+            var form = $('#inputZIPFile');
+            var progress = $('#progress_zip');
+
+            $('#zipUploader').ajaxForm({
+                beforeSend: function () {
+                    status.empty();
+                    var percentVal = '0%';
+                    bar.width(percentVal);
+                    percent.html(percentVal);
+                },
+                uploadProgress: function (event, position, total, percentComplete) {
+                    $(progress).show();
+                    var percentVal = percentComplete + '%';
+                    bar.width(percentVal);
+                    percent.html(percentVal);
+                    console.log(event);
+                    if (percentComplete == 100) {
+                        status.html('Файл загружен. Операция обработки и распаковки. Пожалуйста, ждите...');
+                        $(bar).hide();
+                        $(percent).hide();
+                        $(btn).hide();
+                        $(form).hide();
+                    }
+                },
+                complete: function (xhr) {
+                    status.html(xhr.responseJSON);
+                    if (xhr.responseJSON.Result) {
+                        alert('Файлы успешно распакованы. Перезагружаем страницу.');
+                        location.reload();
+                    }
+                    else {
+                        alert('Ошибка при выполнении операции.');
+                    }
+                    $(bar).show();
+                    $(percent).show();
+                    $(btn).show();
+                    $(form).show();
+                }
+            });
+        }
+        //функция смены обложки
+        function bookCoverInit() {
+            $('#prev_images [type="checkbox"]').on('change', function () {
+                var src = $(this).attr('data-src');
+                var bookId = $(this).attr('book-id');
+                var pageId = $(this).attr('page-id');
+                var allChecked = $('#prev_images [type="checkbox"]');
+                var otherInput = jQuery.grep(allChecked, function (a) {
+                    return $(a).attr('page-id') != pageId;
+                });
+                if (otherInput.length > 0) {
+                    jQuery.grep(otherInput, function (a) {
+                        return $(a).prop('checked', false);
+                    });
+                }
+                var currCheckState = $(this).prop('checked');
+                console.log(currCheckState + " " + bookId + " " + src);
+                setCoverIBook(bookId, currCheckState, src)
+            });
+        }
+        //Установка обложки для книги
+        function setCoverIBook(bookId, currCheckState, src) {
+            $.ajax({
+                type: "POST",
+                url: '/TimesMachine/SetCoverBook',
+                data: { bookId: bookId, currCheckState: currCheckState, src: src },
+                dataType: 'json',
+                success: function (data) {
+                    if (data.result == 200) {
+                        alert('Обложка успешно изменена.');
+                        $('#coverImg').attr('src', pathBook + src);
+                    } else if (data.result == 403) {
+                        alert('Ошибка доступа');
+                    } else if (data.result == 404) {
+                        alert('Книга не найдена или удалена');
+                    } else if (data.result == 500) {
+                        alert('Ошибка в процессе изменения обложки');
+                    }
+                }, error: function () {
+                    alert('Ошибка при изменении обложки');
+                }
+            });
+        }
+        function param_loaderInit() {
+            var params = $('[name="param_loader"]');
+            $(params).on('change', function () {
+                var attr = $(this).attr('data-type');
+                $('#attach').find('article').hide();
+                $('#param_uploader_' + attr).show();
+            });
+        }
+        function isCollectionParametersInit() {
+            var elParamCollection = $('#collectionParameters');
+            $('#isCollectedBooks').on('change', function () {
+                console.log($(this).prop('checked'));
+                if ($(this).prop('checked')) {
+                    $(elParamCollection).show('200');
+                }
+                else {
+                    $(elParamCollection).hide('200');
+                }
+            });
+        }
+        function isExrimistStatementsInit() {
+            var elParamExrimist = $('#isExrimistStatementsText');
+            $('#exrimistStatements').on('change', function () {
+                if ($(this).prop('checked')) {                    
+                    $(elParamExrimist).show('200');
+                    $('#visibleBook').prop('checked', false);
+                    $('label[for="visibleBook"]').css('pointer-events', 'none').css('opacity', '0.3');
+                }
+                else {
+                    $(elParamExrimist).hide('200');
+                    $('label[for="visibleBook"]').css('pointer-events', 'auto').css('opacity', '1');
+                }
+            });
+        }
+        function initProgressChange() {
+            var el = $('#main [type="range"]');
+            var count = el.length;
+            var info = $('#progress_book');
+            $(el).on('input', function () {
+                var val = 0;
+                $(el).each(function () {
+                    val += parseInt($(this).val());
+                });
+                val = parseInt(val / count);
+                var res = val + '%';
+                $(info).html(res);
+                $(info).css('width', res).attr('aria-valuenow', val);
+            });
+        }
+        var cutSliderPage;
+        function initRangeSlider() {
+            try {
+                var minValue = 0, maxValue = 0;
+                //all active page
+                var pages = $('.cutImgVisible');
+                if (pages != null && pages.length > 0) {
+                    minValue = parseInt($(pages[0]).attr('data-enum'));
+                    maxValue = parseInt($(pages[pages.length - 1]).attr('data-enum'));
+                    console.log('min: ' + minValue + "\r\n" + 'max: ' + maxValue);
+                }
+                $("#cutSliderPage").ionRangeSlider({
+                    skin: "round",
+                    step: 1,
+                    type: "double",
+                    grid: true,
+                    grid_snap: true,
+                    min: minValue,
+                    max: maxValue,
+                    from: minValue,
+                    to: maxValue,
+                    prefix: "стр."
+                });
+                cutSliderPage = $("#cutSliderPage").data("ionRangeSlider");
+                cutSliderPage.update({
+                    from: minValue,
+                    to: maxValue
+                });
+            }
+            catch (ex) {
+
+            }
+        }
+        var intervalUpdateCutRowTables = null;
+        function updateCutRowTables() {
+            var loading = $('#pagesLoadingIndicator'),
+                pagesRowsTable = $('#pagesTableRows');
+            try {
+
+                $(loading).show();
+                $(pagesRowsTable).addClass('deletePage');
+
+                var from = cutSliderPage.result.from;
+                var to = cutSliderPage.result.to + 1;
+                //console.log('from: ' + from + "\r\n" + 'to: ' + to);
+                //all elements
+                if (intervalUpdateCutRowTables != null) {
+                    clearTimeout(intervalUpdateCutRowTables);
+                    intervalUpdateCutRowTables = null;
+                }
+                intervalUpdateCutRowTables = setTimeout(function () {
+                    $('.page_image').addClass('hide');
+                    for (var i = from; i < to; i++) {
+                        //get element
+                        var elFinder = $('#prev_images [data-enum="' + i + '"]');
+                        if (elFinder != null && elFinder.length > 0) {
+                            if (!($(elFinder).hasClass('deletePage'))) {
+                                $(elFinder).removeClass('hide');
+                            }
+                        }
+                    }
+                    pageOrderUpdate();
+                    clearTimeout(intervalUpdateCutRowTables);
+                    intervalUpdateCutRowTables = null;
+
+                    $(loading).hide();
+                    $(pagesRowsTable).removeClass('deletePage');
+                }, 1500);
+            }
+            catch (ex) {
+                $(loading).hide();
+                $(pagesRowsTable).removeClass('deletePage');
+            }
+        }
+        //обрезать книгу по интервалу страниц
+        function cutImagesApply() {
+            var conf = confirm("Пожалуйста, убедитесь в том, что параметры интервала выставлены верно.\r\nВсе изображения, которые не входят в данный интервал - будут удалены!\r\nПродолжить операцию?");
+            if (conf) {
+                var loading = $('#pagesLoadingIndicator'),
+                    pagesRowsTable = $('#pagesTableRows');
+
+                //элементы, которые нужно оставить (id страниц)
+                var tempArrayId = [];
+                var filteredCutPages = $('.page_image.cutImgVisible:not(.hide)');
+                if (filteredCutPages != null && filteredCutPages.length > 0) {
+                    //страницы, которые нужно оставить
+                    $(filteredCutPages).each(function () {
+                        var intId = parseInt($(this).attr('id').replace('rect_', ''));
+                        tempArrayId.push(intId);
+                    });
+                    //идентификатор книги
+                    var bookId = parseInt($('#BookId').val());
+
+                    console.log('bookId', bookId);
+                    console.log('array Ids', tempArrayId);
+
+                    $(loading).show();
+                    $(pagesRowsTable).addClass('deletePage');
+
+                    $.ajax({
+                        type: "POST",
+                        url: '/TimesMachine/RemovePageArray',
+                        data: { bookId: bookId, pagesId: tempArrayId },
+                        dataType: 'json',
+                        success: function (data) {
+
+                            $(loading).hide();
+                            $(pagesRowsTable).removeClass('deletePage');
+
+                            if (data.result == 200) {
+                                alert('Действие успешно выполнено. Перезагружаем страницу...');
+                                location.reload();
+                            } else if (data.result == 403) {
+                                alert('Не доступа для выполнения этой операции');
+                            } else if (data.result == 500) {
+                                alert('Ошибка сервера. Попробуйте еще раз...');
+                            } else if (data.result == 100) {
+                                alert('Ошибка: пустой параметр tempArrayId');
+                            }
+                        }, error: function () {
+                            alert('Ошибка при выполнении усечения страниц');
+
+                            $(loading).hide();
+                            $(pagesRowsTable).removeClass('deletePage');
+                        }
+                    });
+                }
+            }
+        }
+        //форма усечения изображений
+        function cutOptionFunction(visible) {
+            if (visible) {
+                $('#cutOptions,.pageRealNumber').show('300');
+            }
+            else {
+                $('#cutOptions,.pageRealNumber').hide('300');
+                cutSliderPage.reset();
+                pageOrderUpdate();
+            }
+        }
+        $(document).ready(function () {
+            initRangeSlider();
+            initProgressChange();
+            param_loaderInit();
+            isCollectionParametersInit();
+            isExrimistStatementsInit();
+            bookCoverInit();
+            init_uploaderZIP();
+            initClasses();
+            initAddNewRow();
+            initUploadFile();
+            initAccordion();
+            initSelectable();
+            initJijriCalendar();
+        });
+        function removeOperation(param, id) {
+            if (param == 1) {
+                //remove book
+                var res = confirm('Вы подтверждаете удаление книги?');
+                if (res) {
+                    $.ajax({
+                        type: "POST",
+                        url: '/TimesMachine/RemoveBook',
+                        data: { id: id },
+                        dataType: 'json',
+                        success: function (data) {
+                            if (data.result == 200) {
+                                alert('Книга успешно удалена.');
+                                document.location.href = "/TimesMachine/ControlPanel";
+                            } else if (data.result == 403) {
+                                alert('Ошибка доступа');
+                            } else if (data.result == 404) {
+                                alert('Не найдена или удалена');
+                            } else if (data.result == 500) {
+                                alert('Ошибка в процессе удаления');
+                            }
+                        }, error: function () {
+                            alert('Ошибка при удалении книги');
+                        }
+                    });
+                }
+            }
+            else if (param == 2) {
+                //remove page
+                var res = confirm('Вы подтверждаете удаление страницы?');
+                if (res) {
+                    var obj = $('#rect_' + id);
+                    $.ajax({
+                        type: "POST",
+                        url: '/TimesMachine/RemovePage',
+                        data: { id: id },
+                        dataType: 'json',
+                        success: function (data) {
+                            if (data.result == 200) {
+                                alert('Страница успешно удалена.');
+                                $(obj).remove();
+                                pageOrderUpdate();
+                                initRangeSlider();
+                            } else if (data.result == 403) {
+                                alert('Ошибка доступа');
+                            } else if (data.result == 404) {
+                                alert('Не найдена или удалена');
+                            } else if (data.result == 500) {
+                                alert('Ошибка в процессе удаления');
+                            }
+                        }, error: function () {
+                            alert('Ошибка при удалении страницы');
+                        }
+                    });
+                }
+            }
+        }
+        function pageOrderUpdate() {
+            var el = $('.page_image.cutImgVisible:not(.hide)');
+            if (el != null && el.length > 0) {
+                $(el).each(function (index, value) {
+                    var el = $(this).find('.iteratorCutUpdate');
+                    $(el).html(index + 1);
+                });
+            }
+        }
+    </script>
+</body>

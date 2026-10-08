@@ -1,0 +1,295 @@
+﻿#feedback.main {
+    display: none;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+    background: linear-gradient( 120deg, #4a4a4a 50%, #22202b00 50%);
+}
+
+    #feedback.main .header,
+    #feedback.main legend.header {
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        font-size: 1.25rem;
+        color: #f5b594;
+        font-weight: 200;
+        padding-bottom: 10px;
+    }
+
+    #feedback.main .bio,
+    #feedback.main .logoFeedback,
+    #feedback.main .contact {
+        max-width: 55vh;
+    }
+
+        #feedback.main .logoFeedback img
+        {
+            max-width:10vh;
+        }
+
+        #feedback.main .contact p {
+            color: white;
+        }
+
+        #feedback.main .bio .bio-link {
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 1rem;
+            display: inline-block;
+            float: left;
+            clear: left;
+            text-decoration: none;
+            color: #EEEEEE;
+            margin-bottom: 0.25em;
+            transition: color 300ms ease-in-out;
+        }
+
+            #feedback.main .bio .bio-link i {
+                margin-left: 8px;
+            }
+
+            #feedback.main .bio .bio-link::after {
+                display: block;
+                content: "";
+                height: 1px;
+                width: 0;
+                background: #CA8D6E;
+                transition: width 300ms ease-in-out;
+            }
+
+            #feedback.main .bio .bio-link:hover::after {
+                width: 100%;
+            }
+
+            #feedback.main .bio .bio-link:hover {
+                color: #CA8D6E;
+            }
+
+    #feedback.main .contact {
+        color: #CA8D6E;
+        padding-bottom: 20px;
+    }
+
+        #feedback.main .contact form fieldset {
+            font-size: 1rem;
+            position: relative;
+            border: none;
+            margin-bottom: 0.25em;
+            padding: 0.25em 0;
+        }
+
+            #feedback.main .contact form fieldset label {
+                font-size: 1.6rem;
+                display: block;
+                position: absolute;
+                right: 0.125em;
+                color: #CA8D6E;
+            }
+
+        #feedback.main .contact form input,
+        #feedback.main .contact form textarea,
+        #feedback.main .contact form button {
+            border: 0;
+        }
+
+            #feedback.main .contact form input:focus,
+            #feedback.main .contact form textarea:focus,
+            #feedback.main .contact form button:focus {
+                outline: none;
+            }
+
+        #feedback.main .contact form input,
+        #feedback.main .contact form textarea {
+            display: block;
+            padding: 0.5em 0;
+            width: 100%;
+            background: none;
+            color: #CA8D6E;
+            border-bottom: 1px solid #7D6962;
+            transition: border 300ms ease-in-out;
+            padding-right: 42px
+        }
+
+            #feedback.main .contact form input:focus,
+            #feedback.main .contact form textarea:focus {
+                border-bottom: 1px solid #CA8D6E;
+            }
+
+            #feedback.main .contact form input::-moz-placeholder, .main .contact form textarea::-moz-placeholder {
+                color: #7D6962;
+            }
+
+            #feedback .main .contact form input:-ms-input-placeholder, .main .contact form textarea:-ms-input-placeholder {
+                color: #7D6962;
+            }
+
+            #feedback.main .contact form input::placeholder,
+            #feedback.main .contact form textarea::placeholder {
+                color: #7D6962;
+            }
+
+        #feedback.main .contact button {
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 1rem;
+            display: block;
+            background: #128156;
+            color: #EEEEEE;
+            padding: 1em 1.1em;
+            box-shadow: 0px 7px 4px 0px rgb(44 44 44);
+        }
+
+            #feedback.main .contact button:hover {
+                -webkit-animation: swell 500ms ease-in-out;
+                animation: swell 500ms ease-in-out;
+                cursor: pointer;
+            }
+
+        #feedback.main .contact textarea {
+            resize: none;
+        }
+
+#feedback.main {
+    overflow: auto;
+    -webkit-animation: Page 600ms ease-in-out forwards;
+    animation: Page 600ms ease-in-out forwards;
+}
+
+#feedback.bio {
+    -webkit-animation: Bio 600ms ease-in-out forwards;
+    animation: Bio 600ms ease-in-out forwards;
+}
+
+#feedback.contact {
+    -webkit-animation: Contact 600ms ease-in-out forwards;
+    animation: Contact 600ms ease-in-out forwards;
+}
+
+@-webkit-keyframes Page {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes Page {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@-webkit-keyframes Bio {
+    0% {
+        transform: translateX(-50vw);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+@keyframes Bio {
+    0% {
+        transform: translateX(-50vw);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+@-webkit-keyframes Contact {
+    0% {
+        transform: translateX(50vw);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+@keyframes Contact {
+    0% {
+        transform: translateX(50vw);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+@-webkit-keyframes swell {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes swell {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.buttonFeedback {
+    margin: auto;
+    align-items: center;
+    display: block;
+    margin-top: 67px;
+    position: absolute;
+    background: none;
+    outline: none;
+    border: 0px;
+    border: 1px solid grey;
+    padding: 5px;
+    color: #acacac;
+    margin-left: 10px;
+    z-index: 150;
+    bottom: 70px;
+    display: flex;
+}
+
+.closeFeedback {
+    position: absolute;
+    top: 20px;
+    right: 10px;
+    color: #9b9b9b;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+/*======Responsive CSS=======*/
+@media (max-width: 767px) {
+    #feedback {
+        display: flex;
+        flex-direction: column;
+        padding-bottom: 57px;
+        justify-content: flex-start !important;
+    }
+
+    .buttonFeedback {
+        display: none;
+    }
+}

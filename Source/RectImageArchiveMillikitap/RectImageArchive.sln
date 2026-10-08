@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30611.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimesMachineArchive", "RectImageArchive\TimesMachineArchive.csproj", "{4B9F79B2-6CB9-41E9-80DB-1D8701F67E04}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TimesMachine", "TimesMachine", "{7C6FF30F-D614-409D-B2E8-4C9231ABA853}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Millikitap", "Millikitap", "{0E65258E-81B6-4C0E-BF30-279C366F1818}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4B9F79B2-6CB9-41E9-80DB-1D8701F67E04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B9F79B2-6CB9-41E9-80DB-1D8701F67E04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B9F79B2-6CB9-41E9-80DB-1D8701F67E04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B9F79B2-6CB9-41E9-80DB-1D8701F67E04}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4B9F79B2-6CB9-41E9-80DB-1D8701F67E04} = {7C6FF30F-D614-409D-B2E8-4C9231ABA853}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E0F9E80E-96E7-4C65-9659-0B2E200F934B}
+	EndGlobalSection
+EndGlobal

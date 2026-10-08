@@ -1,0 +1,88 @@
+﻿@using System.Collections;
+@{
+    ViewBag.Title = ViewBag.Caption;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    @model List<RectImageArchiveMillikitap.Models.Favorite>
+    var Locale = ViewData["Translate"] as Hashtable;
+    string version = "1.2.9";
+}
+<link href="~/Content/index.css?v=@version" rel="stylesheet" />
+<link href="~/Content/Favorite/favorite.css?v=@version" rel="stylesheet" />
+<script src="~/Content/Favorite/favorite.js?v=@version"></script>
+<script src="~/Content/Bookmark/Bookmark.js?v=@version"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css">
+<link href="~/Content/Profile/Profile.css?v=@version" rel="stylesheet" />
+<script src="~/Content/Profile/Profile.js?v=@version"></script>
+<script src="~/Toast/toastInit.js"></script>
+<body>
+    <section_profile>
+        <div class="profile flyout" style="background-image: url(/Content/Images//user.svg?v=@version)">
+            <div class="flyout-body">
+                <a href="@Url.Action("Account","Account")">@Locale["Профиль"]</a>
+                <a href="@Url.Action("tagsCloud","TimesMachine")">@Locale["Алфавитный_указатель"]</a>
+                <a href="@Url.Action("Logout","Account")">@Locale["Выйти"]</a>
+            </div>
+        </div>
+    </section_profile>
+    <div class="news_paper_title">
+        <a href="@Url.Action("Index","TimesMachine")" title="@Locale["Перейти_на_главную_страницу"]"><img width="55" src="/Content/Images/logo_main.png?v=@version" class="custom-logo" srcset="/Content/Images/logo_main.png?v=@version" sizes="(max-width: 300px) 100vw, 300px"></a>
+    </div>
+    <section id="search_engine">
+        <div class="se-engine back_black">
+            <div class="text_orange pad_10">@Locale["Избранное"] (@Model.Count())</div>
+            <section class="the-grid-section search_content">
+                <div style="display: contents;">
+                    @{
+                        if (Model != null && Model.Any())
+                        {
+                            var group = Model.GroupBy(c => new { c.BookName })?.ToList();
+                            foreach (var i in group)
+                            {
+
+                                foreach (var el in i)
+                                {
+                                    <article class="the-grid" id="grid_@el.AreaViewerId">
+                                        <div class="the-grid-content">
+                                            <div class="headline">
+                                                <div class="snip1236">
+                                                    <h1>@i.Key.BookName</h1>
+                                                    <h5 class="writer">@el.DateTimePublish</h5>
+                                                </div>
+                                                <figure>
+                                                    <a>
+                                                        <span data-viewer="@el.AreaViewerId" title="@Locale["Удалить_из_избранного"]" class="material-icons btn_option favorite_ctrl"> delete </span>
+                                                    </a>
+                                                    <a target="_blank" href="/TimesMachine/View?BookId=@el.BookId&pageId=@el.PagesId&data-viewerid=@el.AreaViewerId">
+                                                        <img loading="lazy" src="/Books/@el.HashFolder/@el.PreviewImage" alt="undefined">
+                                                    </a>
+                                                </figure>
+                                            </div>
+                                            <p>@(!string.IsNullOrEmpty(el.ArticleTitle) ? el.ArticleTitle : el.Description)</p>
+                                        </div>
+                                    </article>
+                                }
+
+                            }
+                        }
+                    }
+
+                </div>
+            </section>
+        </div>
+    </section>
+    <link href="~/Toast/jquery.toast.css?v=@version" rel="stylesheet" />
+    <script src="~/Toast/jquery.toast.js"></script>
+    @{
+        var customAttrStyle = (RectImageArchiveMillikitap.Models.CustomStyleAppClass)ViewData["CSS"];
+        if (customAttrStyle != null)
+        {
+            <text>
+                <style>
+                    @(customAttrStyle.OtherPagesCSS)
+                </style>
+            </text>
+        }
+    }
+</body>
+

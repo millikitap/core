@@ -1,0 +1,118 @@
+﻿@using System.Collections;
+@{
+    ViewBag.Title = ViewBag.Caption;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Locale = ViewData["Translate"] as Hashtable;
+    string version = "2.2.3";
+}
+
+<script src="~/Scripts/jquery.cookie.js"></script>
+
+<link href="~/Content/LoginSignup/login.css?v=@version" rel="stylesheet" />
+<script src="~/Content/LoginSignup/login.js?v=@version"></script>
+
+<script src="~/Content/Masks/TelephoneMask/tel_mask.js?v=@version"></script>
+<script src="~/Content/Masks/TelephoneMask/tel_mask_list.js?v=@version"></script>
+
+<body>
+    <div class="wrapper">
+        <div class="title-text">
+            <div class="title login">
+                @Locale["Авторизация"]
+            </div>
+            <div class="title signup">
+                @Locale["Регистрация"]
+            </div>
+        </div>
+        <div class="form-container">
+            <div class="slide-controls">
+                <input type="radio" name="slide" id="login" checked>
+                <input type="radio" name="slide" id="signup">
+                <label for="login" class="slide login">@Locale["Вход"]</label>
+                <label for="signup" class="slide signup">@Locale["Регистрация"]</label>
+                <div class="slider-tab"></div>
+            </div>
+            <div class="text-danger">@ViewBag.Info</div>
+            <div class="form-inner">
+                @using (Html.BeginForm("Login", "Account", FormMethod.Post, new { @ReturnUrl = ViewBag.ReturnUrl, @class = "login" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                    <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
+                    <div class="field">
+                        <input name="Username" type="email" placeholder="@Locale["Email"]" required>
+                    </div>
+                    <div class="field">
+                        <input name="Password" type="password" placeholder="@Locale["Пароль"]" required>
+                    </div>
+                    <div class="field">                        
+                        <select class="langSelect">
+                            <option value="1">Ru&emsp;Русский</option>
+                            <option value="4">Tat&emsp;Татарский</option>
+                            <option value="2">Us&emsp;Английский</option>
+                            <option value="3">Ar&emsp;Арабский</option>
+                        </select>
+                    </div>
+                    @*<div class="pass-link">
+              <a href="#">Забыли пароль?</a>
+            </div>
+                    *@
+                    <div class="field btn">
+                        <div class="btn-layer"></div>
+                        <input type="submit" value="@Locale["Войти"]">
+                    </div>
+                    <div class="signup-link">
+                        @Locale["Нет_учетной_записи"] <a href="">@Locale["Создайте_сейчас"]</a>
+                    </div>
+                }
+                @using (Html.BeginForm("Registration", "Account", FormMethod.Post, new { @class = "signup" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                    <div class="field">
+                        <input type="email" placeholder="@Locale["Email"]" name="Username" required>
+                    </div>
+                    <div class="field">
+                        <input type="text" class="tel_input" placeholder="@Locale["Номер_телефона"]" name="Telephone" required>
+                    </div>
+                    <div class="field">
+                        <input type="password" autocomplete="off" placeholder="@Locale["Пароль"]" name="Password" required>
+                    </div>
+                    <div class="field">
+                        <input type="password" autocomplete="off" placeholder="@Locale["Подтверждение"]" name="ConfirmPassword" required>
+                    </div>
+                    <div class="field btn">
+                        <div class="btn-layer"></div>
+                        <input type="submit" value="@Locale["Создать_аккаунт"]">
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="area">
+        <ul class="circles">
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+    </div>
+    @{
+        var customAttrStyle = (RectImageArchiveMillikitap.Models.CustomStyleAppClass)ViewData["CSS"];
+        if (customAttrStyle != null)
+        {
+            <text>
+                <style>
+                    @(customAttrStyle.IndexCSS)
+                </style>
+            </text>
+        }
+    }
+</body>
+

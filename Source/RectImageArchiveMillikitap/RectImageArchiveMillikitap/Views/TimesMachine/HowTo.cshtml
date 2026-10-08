@@ -1,0 +1,365 @@
+﻿@{
+    ViewBag.Title = "Инструкция";
+    Layout = "~/Views/Shared/_LayoutControl.cshtml";
+    string version = "4.5.7";
+}
+
+<body>
+    <div class="current-page">
+        <a title="Обновить страницу ПУ" href="@Url.Action("ControlPanel","TimesMachine")">
+            <img width="55" src="~/Content/Images/logo_main.png?v=@version" class="custom-logo" srcset="/Content/Images/logo_main.png?v=@version" sizes="(max-width: 300px) 100vw, 300px">
+        </a>
+        <ul class="bc">
+            <li>ПУ</li>
+            @{
+                string mvcVersion = typeof(Controller).Assembly.GetName().Version.ToString();
+            }
+            <li><span class="p_curr">Редакция @mvcVersion</span></li>
+        </ul>
+    </div>
+    <header>
+        <h1>FAQ Millikitap - справочник</h1>
+        <div class="area">
+            <ul class="circles">
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
+        </div>
+    </header>
+    <section class="cd-faq">
+        <ul class="cd-faq-categories">
+            <li><a href="#controlPanel">Панель управления</a></li>
+            <li><a href="#roleAssignment">Роли</a></li>           
+            <li><a href="#editor">Книги</a></li>
+            <li><a href="#artefacts">Артефакты</a></li>
+        </ul>
+
+        @{ 
+            string baseUrl = string.Format("{0}://{1}", Request.Url.Scheme, Request.Url.Authority);
+        }
+
+        <div class="cd-faq-items">
+            <ul id="controlPanel" class="cd-faq-group">
+                <li class="cd-faq-title"><h2>Панель управления</h2></li>
+                <li>
+                    <a class="cd-faq-trigger" href="#0">Как войти в панель управления?</a>
+                    <div class="cd-faq-content">
+                        <p>Вход в панель управления осуществляется по адресу: <a target="_blank" title="Открыть в новом окне" href="@Url.Action("ControlPanel","TimesMachine")">@baseUrl@Url.Action("ControlPanel", "TimesMachine")</a>, если желаете открыть страницу по прямой ссылке.</p>
+                        <p>Также, после авторизации, можно войти в панель управления с главной страницы сайта, нажав на иконку:</p>
+                        <p><img loading="lazy" alt="" src="~/Content/FAQ/content/icons/control_menu.PNG" style="height: auto; width: auto" /></p>
+                    </div>
+                </li>
+                <li class="not_drop">                    
+                    <p>Список вкладок панели управления:</p>
+                </li>
+                <li>
+                    <a class="cd-faq-trigger" href="#0">Доступные публикации</a>
+                    <div class="cd-faq-content">
+                        <p>Данная вкладка отображает публикации, которые доступны Вам от роли.</p>
+                        <p>
+                            <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/tab1.PNG" style="height:auto; width:auto" />
+                        </p>
+                        <p>Вы имеете доступ к тем книгам, которые Вам назначил редактор, либо, если документ изначально был создан Вами.</p>
+                    </div>
+                </li>
+
+                <li>
+                    <a class="cd-faq-trigger" href="#1">Скрытые публикации</a>
+                    <div class="cd-faq-content">
+                        <p>
+                            <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/tab2.PNG" style="height:auto; width:auto" />
+                        </p>
+                        <p>
+                            В данной вкладке находятся публикации, которые скрыты от просмотра для пользователей сайта, но доступны Вам от роли.
+                        </p>
+                        <p>
+                            Для изменения состояния видимости, необходимо раскрыть меню у книги и перейти к редактированию.
+                        </p>
+                        <p>
+                            <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/menu_book_edit.PNG" style="height:auto; width:auto" />
+                        </p>
+                        <p>
+                            Состояние доступности меняется путем изменения положения флага <b>"Опубликовать"</b>, который находится на странице редактирования книги.
+                        </p>
+                        <p>
+                            <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/publish_flag.PNG" style="height:auto; width:auto" />
+                        </p>
+                        <p>
+                            Пользователи сайта не могут получить доступ к просмотру скрытых книг, пока Эксперт, Редактор или Администратор в редактировании не установит активное значение флага "Опубликовать".
+                        </p>
+                    </div>
+                </li>
+
+                <li>
+                    <a class="cd-faq-trigger" href="#2">Пользователи</a>
+                    <div class="cd-faq-content">
+                        <p>Данная вкладка отображает всех зарегистрированных пользователей на сайте.</p>
+                        <p>
+                            <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/tab3.png" style="height:auto; width:auto" />
+                        </p>
+                    </div>
+                </li>
+
+            </ul>
+
+            @* Роли *@
+            <ul id="roleAssignment" class="cd-faq-group">
+                <li class="cd-faq-title">
+                    <h2>Роли</h2>
+                </li>
+                <li>
+                    <a class="cd-faq-trigger" href="#3">Виды ролей</a>
+                    <div class="cd-faq-content">
+                        <p>Доступ к панели управления, имеют только пользователи, входившие в группу:</p>
+                        <p>
+                            <b>- Администратор/Редактор</b>
+                        </p>
+                        <p>
+                            <b>- Эксперт</b>
+                        </p>
+                        <p>Роль <b>"Администратор/Редактор"</b> - имеет полный доступ к просмотру и редактированию всех книг, а также к конфигурации пользователей и назначения им прав.</p>
+                        <p>Роль <b>"Эксперт"</b> - имеет доступ к просмотру и редактированию тех книг, которые назначил Редактор, а также к собственным документам.</p>                        
+                    </div>
+                </li>
+
+                <li>
+                    <a class="cd-faq-trigger" href="#4">Как назначить права пользователю?</a>
+                    <div class="cd-faq-content">
+                        <p>Доступ к данному функционалу имеют пользователи, входившие в группу "Администратор/Редактор".</p>
+                        <p>На главной странице в панели управления необходимо перейти на вкладку "Пользователи".</p>
+                        <p>
+                            <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/tab3.png" style="height:auto; width:auto" />
+                        </p>
+                        <p>Далее в столбце Роль для пользователя, выбрать значение из выпадающего списка и нажать на "Применить"</p>
+                        <p>
+                            <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/role_save.PNG" style="height:auto; width:auto" />
+                        </p>                        
+                    </div>
+                </li>
+            </ul>
+            
+            @* Книга *@
+        <ul id="editor" class="cd-faq-group">
+            <li class="cd-faq-title">
+                <h2>Добавление/изменение/удаление книги</h2>
+            </li>
+            <li>
+                <a class="cd-faq-trigger" href="#5">Добавление новой книги</a>
+                <div class="cd-faq-content">
+                    <p>Чтобы перейти к форме добавления новой книги, необходимо на главной странице в Панели управления, кликнуть на <a target="_blank" title="Открыть в новом окне" href="@Url.Action("EditorBook","TimesMachine")">Новая книга</a>.</p>
+                    <p>
+                        <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/new_book_btn.PNG" style="height:auto; width:auto" />
+                    </p>
+                </div>
+            </li>
+
+            <li>
+                <a class="cd-faq-trigger" href="#6">Редактирование книги</a>
+                <div class="cd-faq-content">
+                    <p>Для редактирования книги, необходимо раскрыть меню и кликнуть на "Правка".</p>
+                    <p>
+                        <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/menu_book_edit.PNG" style="height:auto; width:auto" />
+                    </p>
+                </div>
+            </li>
+            <li>
+                <a class="cd-faq-trigger" href="#7">Удаление книги</a>
+                <div class="cd-faq-content">
+                    <p>Чтобы удалить книгу, необходимо на странице редактирования кликнуть на "Удалить" и подтвердить действие.</p>
+                    <p>
+                        <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/delete_book.PNG" style="height:auto; width:auto" />
+                    </p>
+                    <p class="notes">
+                        P.S.: После подтверждения удаления, книга отправляется в архив. В случае необходимости отмены операции или возврата, необходимо обратиться разработчику с просьбой отменить удаление.
+                    </p>
+                </div>
+            </li>
+
+            <li>
+                <a class="cd-faq-trigger" href="#8">Копирование книги</a>
+                <div class="cd-faq-content">
+                    <p>Чтобы создать копию книги, необходимо в раскрывающимся меню кликнуть на "Копия".</p>
+                    <p>
+                        <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/menu_book_dublicate.PNG" style="height:auto; width:auto" />
+                    </p>
+                    <p>Далее отобразиться окно, в к отором необходимо выбрать параметры копирования:</p>
+                    <p>
+                        <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/book_copy_param.PNG" style="height:auto; width:auto" />
+                    </p>
+                    <p>Варианты выбора:</p>
+                    <p><b>- Копировать директорию с изображениями</b>- будет выполнена полная копия оригинала книги, вместе с изображениями.</p>
+                    <p><b>- Не копировать директорию с изображениями</b>- будет выполнена копия только описательной части (текстовая информация с полей), без изображений.</p>
+                    <p class="notes">
+                        P.S.: После успешной операции, выполнится переадресация на скопированную книгу. Название книги при этом, будет иметь префикс "Название_Копия".
+                    </p>
+                </div>
+            </li>
+            <li class="not_drop">
+                <p>Вкладки формы редактирование/добавление книги:</p>
+            </li>
+            <li>
+                <a class="cd-faq-trigger" href="#7">Основные параметры книги</a>
+                <div class="cd-faq-content">
+                    <p>Данная вкладка, содержит основные описательные поля.</p>
+                    <p>
+                        <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/main_page_edit_add.PNG" style="height:auto; width:auto" />
+                    </p>
+                </div>
+            </li>
+            <li>
+                <a class="cd-faq-trigger" href="#9">Изображения</a>
+                <div class="cd-faq-content">
+                    <p class="notes">
+                        P.S.: Данная вкладка доступна после сохранения основной описательной информации (вкладка "Основные параметры книги").
+                    </p>
+                    <div class="not_drop">
+                        <p>Загрузка изображений(страниц)</p>
+                    </div>
+                    <p>Для загрузки изображений, необходимо выбрать один из двух вариантов:</p>
+                    <p>
+                        <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/image_edit_tab_upload.PNG" style="height:auto; width:auto" />
+                    </p>
+                    <p>
+                        <b>- Загрузка изображений (формат графических файлов)</b>
+                    </p>
+                    <p>
+                        <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/image_edit_tab_upload_images.PNG" style="height:auto; width:auto" />
+                    </p>
+                    <p>При данном способе загрузки, вам необходимо будет выбрать графические файлы в директории (кликнув на Выбрать), которые необходимо загрузить.</p>
+                    <p>После выбора файлов, загрузка начнется автоматически и необходимо дождаться окончания выполнения операции.</p>
+                    <hr />
+                    <p>
+                        <b>- Загрузка ZIP архива(7-Zip)</b>
+                    </p>
+                    <p class="notes">
+                        P.S.: <b>Данный способ является производительным</b>, если загружаемых графических элементов много. Рекомендуется использовать именнно этот способ, для большого количества файлов.
+                    </p>
+                    <p>
+                        <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/image_edit_tab_upload_zip.PNG" style="height:auto; width:auto" />
+                    </p>
+                    <p>При данном способе загрузки, вам необходимо будет выбрать *.zip,*7zip архив, который содержит графические элементы.</p>
+                    <p>После выбора архива, необходимо подтвердить действие, нажав на "Начать загрузку ZIP" и дождаться выполнения распаковки и сохранения на сервере.</p>
+
+                    <p class="notes">
+                        P.S.: После выполнения операции загрузки и сохранения файлов на сервере, страница в браузере будет обновлена.
+                    </p>
+                    <hr />
+                    <div class="not_drop">
+                        <p>Установка обложки на книгу</p>
+                    </div>
+                    <p>После того, как изображения загружены, можно установить обложку для книги. Для установки обложки, необходимо кликнуть на элемент, который находится во фрагменте с изображением.</p>
+                    <p>
+                        <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/set_book_cover.PNG" style="height:auto; width:auto" />
+                    </p>
+                    <hr />
+                    <div class="not_drop">
+                        <p>Вырезать страницы(изображения) С-По</p>
+                    </div>
+                    <p>Если возникла необходимость оставить только некоторую последовательную часть страниц в книге (С-По), убрав при этом начало или конец, можно воспользоваться специальным инструментом "Ножницы". Такая необходимость может возникнуть тогда, когда необходимо разбить множество страниц (изображений) на отдельные части, тем самым разделив их.</p>
+                    <p>
+                        <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/image_edit_tab_cut_menu.PNG" style="height:auto; width:auto" />
+                    </p>
+                    <p>После выбора, отобразится шкала для оставления определенного фрагмента.</p>
+                    <p>
+                        <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/image_edit_tab_cut_line.PNG" style="height:auto; width:auto" />
+                    </p>
+                    <p>Выбрав значение С-По, Вы указываете какую часть оставить.</p>
+                    <p class="notes">
+                        P.S.: После подтверждения операции, необходимо дождаться окончания процесса выполнения, далее страница будет перезапущена.
+                    </p>
+                    <div class="not_drop">
+                        <p>Удаление изображения (страницы)</p>
+                    </div>
+                    <p>Для удаления изображения(страницы), необходимо раскрыть меню и кликнуть на "Удалить".</p>
+                    <p>
+                        <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/image_tab_control_menu_book_delete.PNG" style="height:auto; width:auto" />
+                    </p>
+                </div>
+            </li>            
+        </ul>
+
+         @* Артефакты *@
+         <ul id="artefacts" class="cd-faq-group">
+                <li class="cd-faq-title">
+                    <h2>Артефакты</h2>
+                </li>
+                <li>
+                    <a class="cd-faq-trigger" href="#0">Определение</a>
+                    <div class="cd-faq-content">
+                        <p><b>Артефакт-</b> это размеченная область на изображении, по которой можно кликнуть. При клике на эту область, отображается окно с любым текстом, который можно указать в специальном редакторе.</p>
+                        <p>
+                            <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/artefact_client_view_example.PNG" style="height:auto; width:auto" />
+                        </p>
+                    </div>
+                </li>
+
+                <li>
+                    <a class="cd-faq-trigger" href="#0">Добавление/Редактирование артефакта</a>
+                    <div class="cd-faq-content">
+                        <p>Открыть редактор для добавления/редактирования артефакта, можно двумя способами:</p>
+                        <p><b>1. Через пользовательский интерфейс просмотра книги</b></p>
+                        <p>
+                            <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/artefact_client_view_example_add.PNG" style="height:auto; width:auto" />
+                        </p>
+                        <p><b>2. Через панель управления -> Изображения -> Нужная страница(изображение) -> Выпадающее меню -> Изменить</b></p>
+                        <p>
+                            <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/artefact_control_add.PNG" style="height:auto; width:auto" />
+                        </p>
+                        <div class="not_drop">
+                            <p>Редактор артефактов</p>
+                        </div>
+                        <p>Главная страница редактора:</p>
+                        <p>
+                            <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/artefact_page_main.PNG" style="height:auto; width:auto" />
+                        </p>
+                        <div class="not_drop">
+                            <p>Инструменты выделения и размечивание областей</p>
+                        </div>
+                        <p>Для размечивания области, необходимо использовать следующие элементы выделения:</p>
+                        <p><b>- Прямоугольник</b></p>
+                        <p><b>- Кривая</b></p>
+                        <p><b>- Круг</b></p>
+                        <p>
+                            <img loading="lazy" alt="" src="~/Content/FAQ/content/icons/artefact_page_main_objects.PNG" style="height:auto; width:auto" />
+                        </p>
+                        <video preload="auto" style="width:100%;" controls>
+                            <source src="~/Content/FAQ/content/videos/artefacts_edit_objects.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="not_drop">
+                            <p>Редактирование/удаление артефакта</p>
+                        </div>
+                        <p>Чтобы изменить/удалить артефакт, необходимо активировать режим выделения, кликнув на <b>"Редактировать"</b> и далее производить действие с артефактом.</p>
+                        <p>Если необходимо удалить артефакт, необходимо в режиме выделения, кликнуть по артефакту и нажать на Del на клавиатуре.</p>
+                        <video preload="auto" style="width:100%;" controls>
+                            <source src="~/Content/FAQ/content/videos/artefacts_select_remove.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="not_drop">
+                            <p>Задать содержимое(текст) артефакту</p>
+                        </div>
+                        <p>Чтобы задать текст артефакту, который будет отображаться при клике по нему, необходимо в режиме выделения кликнуть по артефакту левой кнопкой мыши два раза. После чего откроется редактор, который позволяет вставить текст.</p>
+                        <video preload="auto" style="width:100%;" controls>
+                            <source src="~/Content/FAQ/content/videos/artefacts_edit_save.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <p><b>Для сохранения всех изменений, необходимо перед закрытием окна кликнуть на "Сохранить документ". Иначе, вся информация будет потеряна.</b></p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <a href="#0" class="cd-close-panel">Закрыть</a>
+    </section>
+
+    <link href="~/Content/FAQ/faq.css?v=@version" rel="stylesheet" />
+    <script src="~/Content/FAQ/faq.js?v=@version"></script>
+</body>
+

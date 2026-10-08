@@ -1,0 +1,63 @@
+﻿@using System.Collections;
+@{
+    var Locale = ViewData["Translate"] as Hashtable;
+    ViewBag.Title = Locale["Аутентификация_по_СМС"];
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var version = "1.4";
+}
+
+<link href="~/Content/SMSAuth/SMSAuth.css?v=@version" rel="stylesheet" />
+<script src="~/Content/SMSAuth/SMSAuth.js?v=@version"></script>
+
+<script src="~/Content/Masks/TelephoneMask/tel_mask.js?v=@version"></script>
+<script src="~/Content/Masks/TelephoneMask/tel_mask_list.js?v=@version"></script>
+
+<div class="area">
+    <ul class="circles">
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ul>
+</div>
+<div class="account">
+    @{
+        using (Html.BeginForm("CheckCodeMobileTelephone", "Account",FormMethod.Post))
+        {
+        <div class="cards">
+            @{
+                var error = (string)TempData["info"];
+                if (!string.IsNullOrEmpty(error))
+                {
+                    <span class="error">@((string)TempData["info"])</span>
+                }
+            }
+            <input type="hidden" readonly class="tel_number" name="telephoneNumber" value="@((string)TempData["telephone"])" />
+            <div class="card-header">
+                <p class="text-center font-08-rem mt-13">
+                    @Locale["Для_входа_на_сайт_необходимо_пройти_двухфакторную_аутентификацию"]                    
+                </p>
+                <p class="text-center font-08-rem mt-13">@Locale["На_номер"] <span class="tel_number">@((string)TempData["telephone"])</span> @Locale["было_отправлено_сообщение_с_кодом_для_входа"]</p>
+            </div>
+            <div class="card-body">
+                <div class="row flex-center">
+                    <div class="col">
+                        <input name="code" class="activation-code-input w-100 " placeholder="@Locale["проверочный_код"]">
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a class="btn btn-default w-100" href="@Url.Action("Logout","Account")">@Locale["Отмена_кода"]</a>
+                <button type="submit" class="btn btn-info w-100">@Locale["Подтвердить_код"]</button>
+            </div>
+        </div>
+        }
+    }
+</div>
+

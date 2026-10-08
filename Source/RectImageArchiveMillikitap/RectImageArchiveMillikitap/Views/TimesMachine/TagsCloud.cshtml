@@ -1,0 +1,109 @@
+﻿@using System.Collections;
+@{
+    ViewBag.Title = ViewBag.Caption;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var tagList = ViewData["tagsJson"] as List<RectImageArchiveMillikitap.Models.TagsCloud>;
+    var Locale = ViewData["Translate"] as Hashtable;
+    string version = "1.2.8";   
+}
+<script>
+    var LocaleJs = {};
+    LocaleJs["Файл_перевода_Data_Table"] = '@Locale["Файл_перевода_Data_Table"]';
+    LocaleJs["Фрагмент_с_совпадением"] = '@Locale["Фрагмент_с_совпадением"]';
+    LocaleJs["Результат_поиска_по_номеру"] = '@Locale["Результат_поиска_по_номеру"]';
+    LocaleJs["Нет_данных_по_запросу"] = '@Locale["Нет_данных_по_запросу"]';
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<link href="~/Content/index.css?v=@version" rel="stylesheet" />
+<link href="~/Content/index.css?v=@version" rel="stylesheet" />
+<link href="~/Content/Profile/Profile.css?v=@version" rel="stylesheet" />
+<script src="~/Content/Profile/Profile.js?v=@version"></script>
+<link href="~/Content/DataTable/datatables.min.css?v=@version" rel="stylesheet" />
+<script src="~/Content/DataTable/datatables.min.js?v=@version"></script>
+<link href="~/Content/DataTable/dataTables.alphabetSearch.css?v=@version" rel="stylesheet" />
+<script src="~/Content/DataTable/dataTables.alphabetSearch.js?v=@version"></script>
+<link href="~/Search/Search.css?v=@version" rel="stylesheet" />
+@* Modal *@
+<link href="~/Content/ModalFullscreen/modal.css?v=@version" rel="stylesheet" />
+<script src="~/Content/ModalFullscreen/modal.js?v=@version"></script>
+<script src="~/Content/TagsCloud/TagsCloud.js?v=@version"></script>
+<style>
+    #btn-close-modal {
+        position: relative;
+        width: 100%;
+        text-align: center;
+        margin-top: 40px;
+        cursor: pointer;
+    }
+</style>
+<body>
+    <section_profile>
+        <div class="profile flyout" style="background-image: url(/Content/Images//user.svg?v=@version)">
+            <div class="flyout-body">
+                <a href="@Url.Action("Account","Account")">@Locale["Профиль"]</a>
+                <a href="@Url.Action("Favorite","TimesMachine")">@Locale["Избранное"]</a>
+                <a href="@Url.Action("Logout","Account")">@Locale["Выйти"]</a>
+            </div>
+        </div>
+    </section_profile>
+    <div class="news_paper_title">
+        <a href="@Url.Action("Index","TimesMachine")" title="@Locale["Перейти_на_главную_страницу"]">
+            <img width="55" src="/Content/Images/logo_main.png?v=@version" class="custom-logo" srcset="/Content/Images/logo_main.png?v=@version" sizes="(max-width: 300px) 100vw, 300px">
+        </a>
+    </div>
+    <section id="search_engine">
+        <div class="se-engine back_black">
+            <div class="text_orange pad_10">@Locale["Алфавитный_указатель"] (@(tagList!=null && tagList.Any()? tagList.Count():0))</div>
+            <section class="the-grid-section search_content">
+                <table id="tagsTable" class="display" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th>@Locale["Тег"]</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            if (tagList != null && tagList.Any())
+                            {
+                                foreach (var t in tagList)
+                                {
+                                    <tr>
+                                        <td>@t.name</td>
+                                        <td>@t.category</td>
+                                        <td><a class="modalHref" data-cat="@t.category" data-val="@t.name">@Locale["Показать"]</a></td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </section>
+    @{
+        var customAttrStyle = (RectImageArchiveMillikitap.Models.CustomStyleAppClass)ViewData["CSS"];
+        if (customAttrStyle != null)
+        {
+            <text>
+                <style>
+                    @(customAttrStyle.OtherPagesCSS)
+                </style>
+            </text>
+        }
+    }
+    <a id="infoModal" href="#modal-02" style="display:none;"></a>
+    <div id="modal-02">
+        <div id="btn-close-modal" class="close-modal-02 close-modal">
+            <img class="closebt" src="~/Content/Images/closebt.svg">
+        </div>
+        <div class="modal-content">
+            <section class="the-grid-section">
+                <div id="contentBooks" style="display: contents;"></div>
+            </section>
+        </div>
+    </div>
+</body>
+

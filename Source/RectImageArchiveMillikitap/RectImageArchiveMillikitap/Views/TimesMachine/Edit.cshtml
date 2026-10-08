@@ -1,0 +1,357 @@
+﻿@{
+    var info = ViewData["pageModel"] as RectImageArchiveMillikitap.Models.Pages;
+    ViewBag.Title = $"Редактирование: {info.Title}";
+    string EditorSVGOriginal = (string)ViewData["EditorSVGOriginal"];
+    string imageUrl = (string)ViewData["imageUrl"];
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string version = "1.1.7";
+}
+@* GRID LAYOUT: https://codepen.io/rpieciorak/pen/mdroYLz *@
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+<link href="~/Content/bootstrap-theme.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+<link href="~/editor/image-map.css?v=@version" rel="stylesheet" />
+<link href="~/Content/loading.css" rel="stylesheet" />
+@* Froalla Editor *@
+<link href="~/editor_froalla/froala_editor.pkgd.min.css" rel="stylesheet" />
+<!-- Include Editor JS files. -->
+<script src="~/editor_froalla/froala_editor.pkgd.min.js"></script>
+<script src="~/editor_froalla/lang_ru.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+@* TagsInput *@
+<link href="~/Content/TagsInput/jquery.tagsinput-revisited.css" rel="stylesheet" />
+<script src="~/Content/TagsInput/jquery.tagsinput-revisited.js"></script>
+<script>
+    var editorFroalla;
+    function initFroalla() {
+        editorFroalla = new FroalaEditor('#editor', {
+            useClasses: false,
+            pastePlain: true,
+            htmlRemoveTags: ['script', 'style', 'base'],
+            htmlExecuteScripts: false,
+            events: {
+                initialized: function () {
+                    editorFroalla = this;
+                }
+            },
+            toolbarButtons: ['undo', 'redo', '|', 'bold', 'underline', 'insertTable', 'fontSize', 'textColor', 'strikeThrough', 'subscript', 'superscript', 'outdent', 'indent', 'clearFormatting', 'insertTable', 'html', 'insertLink', 'video'],
+            toolbarButtonsXS: ['undo', 'redo', '-', 'bold', 'underline', 'insertTable', 'fontSize', 'textColor', 'insertLink', 'video'],
+            language: 'ru'
+        });
+    }
+    function scrollCfg() {
+        $('.fullHeight').css('max-height', window.outerHeight).css('height', window.outerHeight);
+    }
+    function resizeEvent() {
+        $(window).resize(function () {
+            scrollCfg();
+        });
+        $(window).trigger('resize');
+    }
+    var personsArr, eventsArr, placesArr, organizationsArr;
+    function getAutocompleteData() {
+        console.log('getAutocompleteData');
+        $.ajax({
+            type: "POST",
+            url: '/TimesMachine/getAutocompleteData',
+            success: function (data) {
+                personsArr = data.Persons;
+                eventsArr = data.Events;
+                placesArr = data.Places;
+                organizationsArr = data.Organizations;
+            }, error: function () {
+
+            }
+        });
+    }
+    $(document).ready(function () {
+        scrollCfg();
+        //initDrag();
+        getAutocompleteData();
+        resizeEvent();
+        app.loadImage($('#BlobImageLoad').html());
+        loadSVG();
+        initFroalla();
+        layerTrigger();
+    });
+    function loadSVG() {
+        var EditorSVGOriginal = $('#EditorSVGOriginal').html();
+        if (!EditorSVGOriginal != null && EditorSVGOriginal != "") {
+            areasIO.fromJSON($('#EditorSVGOriginal').text());
+        } else {
+            $('#loading').hide();
+        }
+    }
+    function saveEdit() {
+        triggerSave($('#layerTrigger'));
+        $('#RectEditorSVGOriginal').val(areasIO.toJSON(true));
+        $('#RectForViewerSVG').val(app.getHTMLCode());
+        if (imageIsEdit) {
+            $('#BlobImage').val(areasIO.toJSON(false).img);
+        }
+        $('#saveEditForm').submit();
+        $('.loader').css('display', 'flex');
+    }
+    function triggerSave(el) {
+        try {
+            app.getSelectedArea()._attributes.html = editorFroalla.html.get();//.replace(/"/g, "***");
+            app.getSelectedArea()._attributes.articleTitle = $('#articleTitle').val();
+        }
+        catch { }
+        $(el).hide();
+        $('.fr-box,.articleTitle,.editorPanelEdit').hide();
+    }
+    function layerTrigger() {
+        $('#layerTrigger').on('click', function () {
+            triggerSave(this);
+        });
+    }
+    function autoComplete(control) {
+        var id = $(control).attr('data-id');//1=person,2=event,3=place,4=organization
+        var text = $(control).val();
+        switch (parseInt(id)) {
+            case 1:
+                {
+                    app.getSelectedArea()._attributes.person = text;
+                } break;
+            case 2:
+                {
+                    app.getSelectedArea()._attributes.event = text;
+                } break;
+            case 3:
+                {
+                    app.getSelectedArea()._attributes.place = text;
+                } break;
+            case 4:
+                {
+                    app.getSelectedArea()._attributes.organization = text;
+                } break;
+        }
+    }
+</script>
+
+<div id="container">
+    <div id="headerA">
+        <span class="material-icons">
+            crop
+        </span>&nbsp;Редактор артефактов
+    </div>
+    <div id="mapA">
+        <div id="map-wrapper">
+            <div class="zoomBtn">
+                <a><span class="material-icons zoom_ctrl" data-attr="plus">control_point</span></a>
+                <a><span class="material-icons zoom_ctrl" data-attr="minus">remove_circle_outline</span></a>
+            </div>
+            <div id="map">
+                <div>
+                    <div id="get_image_wrapper">
+                        <div id="get_image">
+                            <span title="close" class="close_button"></span>
+                            <div id="logo_get_image">
+
+                            </div>
+                            <div id="loading">Загрузка</div>
+                            <div id="file_reader_support">
+                                <label>Переместите изображение</label>
+                                <div id="dropzone">
+                                    <span class="clear_button" title="clear">x</span>
+                                    <img src="" alt="preview" id="sm_img" />
+                                </div>
+                                <b style="display:none;">или</b>
+                            </div>
+                            <div style="display:none;">
+                                <label for="url">укажите URL адрес к изображению</label>
+                                <span id="url_wrapper">
+                                    <span class="clear_button" title="clear">x</span>
+                                    <input type="text" id="url" />
+                                </span>
+                            </div>
+                            <button id="button">Подтвердить</button>
+                        </div>
+                    </div>
+                    <div id="overlay"></div>
+                    <div id="help">
+                        <span class="close_button" title="close"></span>
+                        <div class="txt">
+                            <section>
+                                <h2>Main</h2>
+                                <p><span class="key">F5</span> &mdash; reload the page and display the form for loading image again</p>
+                                <p><span class="key">S</span> &mdash; save map params in localStorage</p>
+                            </section>
+                            <section>
+                                <h2>Drawing mode (rectangle / circle / polygon)</h2>
+                                <p><span class="key">ENTER</span> &mdash; stop polygon drawing (or click on first helper)</p>
+                                <p><span class="key">ESC</span> &mdash; cancel drawing of a new area</p>
+                                <p><span class="key">SHIFT</span> &mdash; square drawing in case of a rectangle and right angle drawing in case of a polygon</p>
+                            </section>
+                            <section>
+                                <h2>Editing mode</h2>
+                                <p><span class="key">DELETE</span> &mdash; remove a selected area</p>
+                                <p><span class="key">ESC</span> &mdash; cancel editing of a selected area</p>
+                                <p><span class="key">SHIFT</span> &mdash; edit and save proportions for rectangle</p>
+                                <p><span class="key">I</span> &mdash; edit attributes of a selected area (or dblclick on an area)</p>
+                                <p><span class="key">CTRL</span> + <span class="key">C</span> &mdash; a copy of the selected area</p>
+                                <p><span class="key">&uarr;</span> &mdash; move a selected area up</p>
+                                <p><span class="key">&darr;</span> &mdash; move a selected area down</p>
+                                <p><span class="key">&larr;</span> &mdash; move a selected area to the left</p>
+                                <p><span class="key">&rarr;</span> &mdash; move a selected area to the right</p>
+                            </section>
+                        </div>
+                    </div>
+                    <div id="wrapper">
+                        <div id="image_wrapper">
+                            <div id="layerTrigger"></div>
+                            <div id="image">
+                                <img src="" alt="#" id="img" />
+                                <svg preserveAspectRatio="xMinYMin meet" xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny" id="svg"></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="code">
+                        <span class="close_button" title="close"></span>
+                        <div id="code_content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="chartA">
+        <div id="chart-pane">
+            <div class="chart">
+                <nav id="nav" class="clearfix">
+                    <ul>
+                        <li style="display:none;" id="save"><a href="#">Сохранить Json to Local Storage</a></li>
+                        <li style="display:none;" id="load"><a href="#">Загрузить Json to Local Storage</a></li>
+                        <li style="display:none;" id="from_html"><a href="#">из html</a></li>
+                        <li id="rectangle"><a href="#"><span class="material-icons">crop_16_9</span> Прямоугольник</a></li>
+                        <li id="polygon"><a href="#"><span class="material-icons">polymer</span> Кривая (полигон)</a></li>
+                        <li id="circle"><a href="#"><span class="material-icons">all_out</span> Круг</a></li>
+                        <li id="edit"><a href="#">Редактировать</a></li>
+                        <li style="display:none;" id="to_html"><a href="#">в html</a></li>
+                        <li style="display:none;" id="preview"><a href="#">просмотр object</a></li>
+                        <li id="clear"><a href="#">Очистить все</a></li>
+                        <li id="new_image"><a href="#">Новое изображение (сбросить все)</a></li>
+                        <li style="display:none;" id="show_help"><a href="#">?</a></li>
+                        <li><a onclick="saveEdit()" class="saveBtn" href="#">
+                            <span class="material-icons">save</span> Сохранить документ</a>
+                        </li>
+                        <li><a href="@Url.Action("View","TimesMachine",new { @BookId = info.Book.BookId,  @pageId = info.Id })" target="_blank">Посмотреть документ</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="chart">
+                <div class="editorPanelEdit">
+                    <div>
+                        <div class="form-group articleTitle" style="display:none;">
+                            <label for="formGroupExampleInput">Название статьи</label>
+                            <input type="text" class="form-control" id="articleTitle" onchange="app.setArticleTitleText()" placeholder="Заголовок">
+                        </div>
+                        @Html.TextArea("editor", new { id = "editor" })
+                        <div class="editorCtrlBtn">
+                            <button onclick="triggerSave('#layerTrigger');" class="btn btn-default">закрыть</button>
+                        </div>
+                    </div>
+                    <div id="coords"></div>
+                    <div id="debug"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<body>
+    <div class="loader">
+        <div class="loader--dot"></div>
+        <div class="loader--dot"></div>
+        <div class="loader--dot"></div>
+        <div class="loader--dot"></div>
+        <div class="loader--dot"></div>
+        <div class="loader--dot"></div>
+        <div class="loader--text"></div>
+    </div>
+
+    @using (Html.BeginForm("saveChanges", "TimesMachine", FormMethod.Post, new { id = "saveEditForm" }))
+    {
+        @Html.Hidden("bookId", info.Book.BookId, new { @id = "bookId" })
+        @Html.Hidden("pageId", info.Id, new { @id = "pageId" })
+        @Html.TextArea("RectEditorSVGOriginal", EditorSVGOriginal, new { @id = "RectEditorSVGOriginal", @style = "display:none" })
+        @Html.TextArea("RectForViewerSVG", new { @id = "RectForViewerSVG", @style = "display:none" })
+        @Html.TextArea("BlobImage", new { @id = "BlobImage", @style = "display:none" })
+        @Html.TextBox("imageUrl", imageUrl, new { @id = "imageUrl", @style = "display:none" })
+    }
+    <div style="display:none;" id="BlobImageLoad">@info.BlobImage</div>
+    <div style="display:none;" id="EditorSVGOriginal">@EditorSVGOriginal</div>
+    <noscript>
+        <div id="noscript">
+            Javascript отключен в браузере.
+        </div>
+    </noscript>
+    <form id="edit_details">
+        <h5>Attributes</h5>
+        <span class="close_button" title="close"></span>
+        <p>
+            <label for="href_attr">href</label>
+            <input type="text" id="href_attr" />
+        </p>
+        <p>
+            <label for="alt_attr">alt</label>
+            <input type="text" id="alt_attr" />
+        </p>
+        <p>
+            <label for="title_attr">title</label>
+            <input type="text" id="title_attr" />
+        </p>
+        <button id="save_details">Save</button>
+    </form>
+
+    <div id="from_html_wrapper">
+        <form id="from_html_form">
+            <h5>Loading areas</h5>
+            <span class="close_button" title="close"></span>
+            <p>
+                <label for="code_input">Enter your html code:</label>
+                <textarea id="code_input"></textarea>
+            </p>
+            <button id="load_code_button">Load</button>
+        </form>
+    </div>    
+    <script src="~/editor/image-map.js??v=@version"></script>
+    <script>
+        //init zoom_ctrl
+        let defaultZoom = 1;
+        let cZoom = 1.2;
+        let wrapperEl = $('#wrapper');
+        let map = $('#map');
+        function scrollEvent() {
+            $(map).on('scroll', function () {
+                app.recalcOffsetValues();
+            });
+        }
+        function initScaleBindFunction() {
+            $('.zoom_ctrl').on('click', function () {
+                var dataAttr = $(this).attr('data-attr');
+                switch (dataAttr) {
+                    case "plus":
+                        {
+                            defaultZoom = defaultZoom * cZoom;
+                        } break;
+                    case "minus":
+                        {
+                            defaultZoom = defaultZoom / cZoom;
+                        } break;
+                }
+                //$(wrapperEl).css('transform-origin', 'center top');
+                $(wrapperEl).css('transform', 'scale3d(' + defaultZoom + ', ' + defaultZoom + ', ' + defaultZoom + ')');
+                app.recalcOffsetValues();
+            });
+        }
+        $(document).ready(function () {
+            scrollEvent();
+            initScaleBindFunction();
+        });
+    </script>
+</body>
+

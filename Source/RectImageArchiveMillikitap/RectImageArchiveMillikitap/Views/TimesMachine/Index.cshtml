@@ -1,0 +1,234 @@
+﻿@using System.Collections;
+@{
+    ViewBag.Title = ViewBag.Caption;
+    var bookList = ViewData["Books"] as List<RectImageArchiveMillikitap.Models.Books>;
+    string pathBook = (string)ViewData["folderBookUrl"];
+    var states = ViewData["states"] as List<RectImageArchiveMillikitap.Models.States>;
+    var themes = ViewData["themes"] as List<RectImageArchiveMillikitap.Models.ThemesLanguagesList>;
+    var types = ViewData["types"] as List<RectImageArchiveMillikitap.Models.TypesLanguagesList>;
+    var HasAccess = (bool)ViewData["access"];   
+    var Locale = ViewData["Translate"] as Hashtable;
+    string version = "2.3.3";
+    //Шаблон списка книг для главной страницы:
+    //https://codepen.io/michaelmcshinsky/pen/KhxFm
+    //https://www.qdl.qa/en/search/site/?f[0]=document_source:archive_source
+}
+
+<script>
+    var LocaleJs = {};
+    LocaleJs["Поиск_выполнен"] = '@Locale["Поиск_выполнен"]';    
+</script>
+
+<script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+<link href="~/Content/materialize.css?v=@version" rel="stylesheet" />
+<link href="~/Content/loading.css?v=@version" rel="stylesheet" />
+<link href="~/Content/index.css?v=@version" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css">
+<link href="~/Search/Search.css?v=@version" rel="stylesheet" />
+<script src="~/Search/Search.js?v=@version"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<link href="~/Toast/jquery.toast.css?v=@version" rel="stylesheet" />
+<script src="~/Toast/jquery.toast.js?v=@version"></script>
+<link href="~/Content/Profile/Profile.css?v=@version" rel="stylesheet" />
+<script src="~/Content/Profile/Profile.js?v=@version"></script>
+<script src="~/Toast/toastInit.js?v=@version"></script>
+<link href="~/Content/flickity.min.css" rel="stylesheet" />
+<script src="~/Scripts/flickity.pkgd.min.js"></script>
+<script src="~/Scripts/bg-lazyload.js"></script>
+
+@{
+    var customAttrStyle = (RectImageArchiveMillikitap.Models.CustomStyleAppClass)ViewData["CSS"];
+    if (customAttrStyle != null)
+    {
+        <text>
+            <style>
+                    @(customAttrStyle.IndexCSS)
+            </style>
+        </text>
+    }
+}
+<body>
+    <header>
+        <section_profile>
+            @{
+                if (HasAccess)
+                {
+                    <a title="@Locale["Перейти_в_панель_управления"]" class="btn btn-primary btn-circle btn-sm" href="@Url.Action("ControlPanel","TimesMachine")"><i class="material-icons" style="font-size:28px;">build_circle</i></a>
+                }
+            }
+            <div class="profile flyout" style="background-image: url(/Content/Images//user.svg?v=@version)">
+                <div class="flyout-body">
+                    <a href="@Url.Action("Account", "Account")">@Locale["Профиль"]</a>
+                    <a href="@Url.Action("tagsCloud","TimesMachine")">@Locale["Алфавитный_указатель"]</a>
+                    <a href="@Url.Action("Favorite", "TimesMachine")">@Locale["Избранное"]</a>
+                    <a href="@Url.Action("Logout", "Account")">@Locale["Выйти"]</a>
+                </div>
+            </div>
+        </section_profile>
+        <div class="news_paper_title">
+            <a href="@Url.Action("Index", "TimesMachine")" title="@Locale["Перейти_на_главную_страницу"]">
+                <img width="55" src="~/Content/Images/logo_main.png?v=@version" class="custom-logo" srcset="~/Content/Images/logo_main.png?v=@version" sizes="(max-width: 300px) 100vw, 300px">
+            </a>
+        </div>
+        <div class="dark_mode_container">
+            <label class="dark_mode_switch" for="checkbox">
+                <input type="checkbox" id="checkbox" />
+                <div class="slider round"></div>
+            </label>
+        </div>
+    </header>
+    <section id="search_engine">
+        <div class="se-engine">
+            <div id="loading-indicator" style="width: 60px; height: 60px;position:absolute;margin:10px;display:none;" role="progressbar" class="MuiCircularProgress-root MuiCircularProgress-colorPrimary MuiCircularProgress-indeterminate"><svg viewBox="22 22 44 44" class="MuiCircularProgress-svg"> <circle cx="44" cy="44" r="20.2" fill="none" stroke-width="3.6" class="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate"></circle></svg></div>
+            @using (Ajax.BeginForm("SearchPartialMain", "TimesMachine", new AjaxOptions { InsertionMode = InsertionMode.Replace, HttpMethod = "POST", LoadingElementId = "loading-indicator", UpdateTargetId = "search-results-list", OnBegin = "updateHasScroll", OnComplete = "SearchPartialMainComplete" }, new { @id = "search" }))
+            {
+                <div class="row">
+                    <div class="special-pad">
+                        <div class="col m7">
+                            <p class="line_type anim-typewriter">
+                                @(customAttrStyle?.TextTitle)
+                            </p>
+                        </div>
+                        <div class="col m5">
+                            <div class="bg-green">
+                                <button type="submit" name="search" class="btn btn-green center-align el_style">
+                                    <i class="material-icons" style="font-size:28px;">search</i> @Locale["Найти"]
+                                </button>
+                                <button type="button" title="@Locale["Сбросить_параметры_и_результат_поиска"]" id="clear_filter" onclick="clear_search(this)" class="btn btn-primary btn-circle btn-sm" style="display:none;">
+                                    <i class="material-icons" style="font-size:28px;">close</i>
+                                </button>
+                                <button type="button" title="@Locale["Дополнительные_параметры"]" id="add_p_search" class="btn btn-primary btn-circle btn-sm">
+                                    <i class="material-icons" style="font-size:28px;">keyboard_arrow_down</i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="col m12 hide">
+                                <div class="col m6 l-bord">
+                                    <label>Дата выпуска/С</label>
+                                    <input name="DtStart" type="text" placeholder="-" class="datepicker" id="from">
+                                </div>
+                                <div class="col m6 l-bord">
+                                    <label>Дата выпуска/По</label>
+                                    <input name="DtEnd" type="text" placeholder="-" class="datepicker" id="to">
+                                </div>
+                            </div>
+                            <div class="col m12">
+                                <div class="col m6 l-bord">
+                                    <label>@Locale["Название _оригинал"]</label>
+                                    <input name="Name" type="text" placeholder="-">
+                                </div>
+                                <div class="col m6 l-bord">
+                                    <label>@Locale["Тематика"]</label>
+                                    <div class="input-field browser-default">
+                                        <select class="browser-default" data-type="Attributes.ThemesLanguagesListId" name="Attributes.ThemesLanguagesListId">
+                                            <option>-</option>
+                                            @{
+                                                if (themes != null && themes.Any())
+                                                {
+                                                    foreach (var i in themes)
+                                                    {
+                                                        <option value="@i.ThemesLanguagesListId">
+                                                            @string.Format("{0}", i?.DescriptionThemeRussian)
+                                                        </option>
+                                                    }
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col m12">
+                                <div class="col m6 l-bord">
+                                    <label>@Locale["Автор"]</label>
+                                    <input name="Attributes.AuthorOfArabic" type="text" placeholder="-">
+                                </div>
+                                <div class="col m6 l-bord">
+                                    <label>@Locale["Тип"]</label>
+                                    <div class="input-field browser-default">
+                                        <select class="browser-default" data-type="Attributes.TypesLanguagesListId" name="Attributes.TypesLanguagesListId">
+                                            <option>-</option>
+                                            @{
+                                                if (types != null && types.Any())
+                                                {
+                                                    foreach (var i in types)
+                                                    {
+                                                        <option value="@i.TypesLanguagesListId">
+                                                            @string.Format("{0}", i?.DescriptionTypeRussian)
+                                                        </option>
+                                                    }
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col m12 hide_search" id="searchExtra">
+                                <div class="col m6 l-bord hide">
+                                    <label>Название статьи</label>
+                                    <input name="ArticleTitle" type="text" placeholder="-">
+                                </div>
+
+                                <div class="col m6 l-bord hide">
+                                    <label>Поиск по тексту</label>
+                                    <input name="Text" type="text" placeholder="-">
+                                </div>
+
+                                <div class="col m6 l-bord">
+                                    <label>@Locale["Состояние"]</label>
+                                    <div class="input-field browser-default">
+                                        <select class="browser-default" data-type="Attributes.StatesId" name="Attributes.StatesId">
+                                            <option>-</option>
+                                            @{
+                                                if (states != null && states.Any())
+                                                {
+                                                    foreach (var i in states)
+                                                    {
+                                                        <option value="@i.StatesId">@i.StateDescription</option>
+                                                    }
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col m6 l-bord">
+                                    <label>@Locale["Ключевые_теги"]</label>
+                                    <input name="Tag" type="text" placeholder="-">
+                                </div>
+                                @*<div class="col m6 l-bord hide">
+                                        <label>Персона</label>
+                                        <input data-suggest type="text" data-type="Person" autocomplete="off" id="personAuto" name="Person" placeholder="-">
+                                        <div class="suggestion"></div>
+                                    </div>*@
+                                <input type="hidden" name="groupCollected" value="true" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            <section class="the-grid-section search_content">
+                @{
+                    if (HasAccess)
+                    {
+                        <div class="add_new">
+                            <a title="@Locale["Добавить"]" href="@Url.Action("EditorBook")"><span class="material-icons"> add_circle </span></a>
+                        </div>
+                    }
+                    <!-- Новый вариант списка книг -->
+                    <div id="search-results-list"></div>
+                    <div id="loadingMore"></div>
+                }
+            </section>
+            <div class="more_cont">
+                <button type="button" id="more_btn" class="btn btn_more">
+                    <i class="material-icons" style="font-size:28px;">expand_more</i> @Locale["Больше"]
+                </button>
+            </div>
+        </div>
+    </section>
+    <script src="~/Scripts/Index/Index.js?v=1.1.3"></script>
+    <link href="~/Scripts/Helpers/Autocomplete.css" rel="stylesheet" />
+    <script src="~/Scripts/Helpers/Autocomplete.js"></script>
+</body>

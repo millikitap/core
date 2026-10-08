@@ -1,0 +1,98 @@
+﻿@using System.Collections;
+@{
+    ViewBag.Title = ViewBag.Caption;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    @model RectImageArchiveMillikitap.Models.CustomAuthentication.CustomMembershipUser
+    var Locale = ViewData["Translate"] as Hashtable;
+    string version = "2.1.7";
+}
+<link href="~/Content/index.css?v=@version" rel="stylesheet" />
+<link href="~/Content/Account/Account.css?v=@version" rel="stylesheet" />
+<script src="~/Content/Account/Account.js?v=@version"></script>
+<link href="~/Content/Profile/Profile.css?v=@version" rel="stylesheet" />
+<script src="~/Content/Profile/Profile.js?v=@version"></script>
+<body>
+    <div class="wrapper">
+        <section_profile>
+            <div class="profile flyout" style="background-image: url(/Content/Images//user.svg?v=@version)">
+                <div class="flyout-body">
+                    <a href="@Url.Action("tagsCloud","TimesMachine")">@Locale["Алфавитный_указатель"]</a>
+                    <a href="@Url.Action("Favorite","TimesMachine")">@Locale["Избранное"]</a>
+                    <a href="@Url.Action("Logout","Account")">@Locale["Выйти"]</a>
+                </div>
+            </div>
+        </section_profile>
+
+        <div class="news_paper_title">
+            <a href="@Url.Action("Index","TimesMachine")" title="@Locale["Перейти_на_главную_страницу"]">
+            <img width="55" src="/Content/Images/logo_main.png?v=@version" class="custom-logo" srcset="/Content/Images/logo_main.png?v=@version" sizes="(max-width: 300px) 100vw, 300px">
+            </a>
+        </div>
+        <div class="password-container">
+            <h1>@Locale["Изменение_пароля"]</h1>
+            <span class="line"></span>
+            @using (Html.BeginForm("ChangePassword", "Account", FormMethod.Post))
+            {
+                <span class="label-info">@(ViewBag.Info as string)</span>
+                <div class="form-group">
+                    <input name="current" class="form-control" type="password" required>
+                    <label>@Locale["Текущий_пароль"]</label>
+                </div>
+                <div class="form-group">
+                    <input name="password" class="form-control" type="password" required>
+                    <label>@Locale["Новый_пароль"]</label>
+                </div>
+                <div class="form-group">
+                    <input name="confirm" class="form-control" type="password" required>
+                    <label>@Locale["Подтверждение_пароля"]</label>
+                </div>
+                <a class="back">@Locale["Вернуться_в_профиль"]</a>
+                <button type="submit" class="btn">@Locale["Продолжить"]</button>
+            }
+        </div>
+        <div class="account-container">
+            <h1>@Locale["Управление_профилем"]</h1>
+            <span class="line"></span>
+            <h2>Email: @Model.Email</h2>
+            <h3>                
+                @{
+
+                    string role = (string.Join(",", Model.Roles?.Select(c => new { c.RoleName })));
+                    if(!string.IsNullOrEmpty(role))
+                    {
+                        <span>@role</span>
+                    }
+                    else
+                    {
+                        <span>User</span>
+                    }
+                }
+            </h3>
+            @using (Html.BeginForm("SaveProfile", "Account", FormMethod.Post))
+            {
+                <div class="form-group">
+                    <input value="@Model.FirstName" name="firstName" type="text" class="form-control" required>
+                    <label>@Locale["Имя"]</label>
+                </div>
+                <div class="form-group">
+                    <input value="@Model.LastName" name="lastName" type="text" class="form-control" required>
+                    <label>@Locale["Фамилия"]</label>
+                </div>
+                <a class="change-password">@Locale["Изменить_пароль"]</a>                
+                <button type="submit" class="btn">@Locale["Сохранить_параметры"]</button>
+            }
+        </div>
+    </div>
+    @{
+        var customAttrStyle = (RectImageArchiveMillikitap.Models.CustomStyleAppClass)ViewData["CSS"];
+        if (customAttrStyle != null)
+        {
+            <text>
+                <style>
+                    @(customAttrStyle.IndexCSS)
+                </style>
+            </text>
+        }
+    }
+</body>
+

@@ -1,0 +1,162 @@
+﻿* {
+    box-sizing: border-box;
+}
+
+.wrapper {    
+    position: relative;
+}
+
+    .wrapper .password-container {
+        display: none;
+        top: 23%;
+    }
+
+    .wrapper .account-container {
+        top: 30%;
+    }
+
+    .wrapper .account-container, .wrapper .password-container {
+        width: auto;
+        border-radius: 8px;
+        margin: auto auto;
+        background: #00000094;
+        margin-top: 100px;
+        padding: 20px;
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+
+        .wrapper .account-container h1, .wrapper .account-container h2, .wrapper .account-container h3, .wrapper .password-container h1, .wrapper .password-container h2, .wrapper .password-container h3 {
+            text-align: center;
+            margin: 6px 0;
+            padding: 0;
+            color: white;
+        }
+
+        .wrapper .account-container h1, .wrapper .password-container h1 {
+            font-size: 22px;
+            font-weight: 400;
+        }
+
+        .wrapper .account-container h2, .wrapper .password-container h2 {
+            font-size: 18px;
+            font-weight: 200;
+        }
+
+        .wrapper .account-container h3, .wrapper .password-container h3 {
+            font-size: 17px;
+            color: #9B9B9B;
+            font-weight: 200;
+        }
+
+        .wrapper .account-container .line, .wrapper .password-container .line {
+            height: 1px;
+            width: 36px;
+            background: #9B9B9B;
+            display: block;
+            margin: 24px auto;
+        }
+
+        .wrapper .account-container form, .wrapper .password-container form {
+            /* margin: 48px 0; */
+            /* display: flex; */
+            /* flex-grow: 3; */
+            display: table;
+            margin: auto;
+        }
+
+            .wrapper .account-container form .form-group, .wrapper .password-container form .form-group {
+                margin: 12px 0;
+                position: relative;
+                /* display: flex; */
+                justify-content: center;
+            }
+
+                .wrapper .account-container form .form-group:first-child, .wrapper .password-container form .form-group:first-child {
+                    margin-top: 0;
+                }
+
+                .wrapper .account-container form .form-group label, .wrapper .password-container form .form-group label {
+                    font-size: 16px;
+                    color: #878787;
+                    font-weight: 200;
+                    margin: 24px 0;
+                    position: absolute;
+                    z-index: 2;
+                    left: 24px;
+                    top: 26px;
+                    pointer-events: none;
+                    transition: transform 100ms ease;
+                    transform: translateY(-30px);
+                }
+
+                .wrapper .account-container form .form-group .helper-text, .wrapper .password-container form .form-group .helper-text {
+                    font-size: 14px;
+                    color: #878787;
+                    font-weight: 200;
+                    text-align: right;
+                    display: inline-block;
+                    position: absolute;
+                    bottom: 40px;
+                    right: 0px;
+                }
+
+                .wrapper .account-container form .form-group input, .wrapper .password-container form .form-group input {
+                    padding: 23px 10px 14px;
+                    border: none;
+                    background: #ffffff;
+                    border-radius: 4px;
+                    outline: 0 none;
+                    position: relative;
+                    color: black;
+                    font-weight: 200;
+                    font-size: 17px;
+                    width: fit-content;
+                }
+
+                    .wrapper .account-container form .form-group input:focus + label, .wrapper .account-container form .form-group input:valid + label, .wrapper .password-container form .form-group input:focus + label, .wrapper .password-container form .form-group input:valid + label {
+                        font-size: 12px;
+                        transform: translateY(-40px);
+                    }
+
+                    .wrapper .account-container form .form-group input:focus, .wrapper .password-container form .form-group input:focus {
+                        transition: 0.125s all ease-in-out;
+                        box-shadow: inset 0 0 0 2px #179BE5, 0 6px 24px rgba(0, 0, 0, 0.5);
+                    }
+
+            .wrapper .account-container form .btn, .wrapper .password-container form .btn {
+                border-radius: 48px;
+                background: #128156;
+                border: none;
+                color: white;
+                font-size: 16px;
+                font-weight: 200;
+                padding: 12px 24px;
+                margin: auto;
+                outline: none;
+                cursor: pointer;
+                display: block;
+                margin-top: 10px;
+            }
+
+                .wrapper .account-container form .btn:hover, .wrapper .password-container form .btn:hover {
+                    transition: 0.125s all ease-in-out;
+                    background: #0d585a;
+                }
+
+            .wrapper .account-container form .change-password, .wrapper .account-container form .back, .wrapper .password-container form .change-password, .wrapper .password-container form .back {
+                color: white;               
+                font-weight: 200;                
+                display: flex;
+                justify-content: center;
+            }
+
+                .wrapper .account-container form .change-password:hover, .wrapper .account-container form .back:hover, .wrapper .password-container form .change-password:hover, .wrapper .password-container form .back:hover {
+                    text-decoration: underline;
+                    cursor: pointer;
+                }
+
+.label-info
+{
+    color:white;
+}
