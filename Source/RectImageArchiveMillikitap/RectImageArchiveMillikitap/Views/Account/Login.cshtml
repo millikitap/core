@@ -3,7 +3,7 @@
     ViewBag.Title = ViewBag.Caption;
     Layout = "~/Views/Shared/_Layout.cshtml";
     var Locale = ViewData["Translate"] as Hashtable;
-    string version = "2.2.3";
+    string version = "2.3.0";
 }
 
 <script src="~/Scripts/jquery.cookie.js"></script>
@@ -73,6 +73,15 @@
                         <input type="email" placeholder="@Locale["Email"]" name="Username" required>
                     </div>
                     <div class="field">
+                        <input type="text" placeholder="Имя" name="FirstName" required maxlength="200">
+                    </div>
+                    <div class="field">
+                        <input type="text" placeholder="Фамилия" name="LastName" required maxlength="200">
+                    </div>
+                    <div class="field">
+                        <input type="text" placeholder="Место учебы/работы" name="PlaceOfStudyWork" required maxlength="300">
+                    </div>
+                    <div class="field">
                         <input type="text" class="tel_input" placeholder="@Locale["Номер_телефона"]" name="Telephone" required>
                     </div>
                     <div class="field">
@@ -80,6 +89,12 @@
                     </div>
                     <div class="field">
                         <input type="password" autocomplete="off" placeholder="@Locale["Подтверждение"]" name="ConfirmPassword" required>
+                    </div>
+                    <div class="field consent">
+                        <label>
+                            <input type="checkbox" name="PrivacyAccepted" value="true" required>
+                            Согласие с <a href="@Url.Action("Privacy", "Account")" target="_blank" rel="noopener">политикой конфиденциальности</a>*
+                        </label>
                     </div>
                     <div class="field btn">
                         <div class="btn-layer"></div>

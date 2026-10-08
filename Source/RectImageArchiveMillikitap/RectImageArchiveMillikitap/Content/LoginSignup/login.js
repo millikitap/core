@@ -17,8 +17,30 @@
         signupBtn.click();
         return false;
     });
+    $('form.signup').on('submit', function (e) {
+        var email = $.trim($(this).find('[name=Username]').val() || '');
+        if (!isAllowedRuEmail(email)) {
+            e.preventDefault();
+            alert('Допускаются только адреса на доменах .ru и .рф');
+            return false;
+        }
+        if (!$(this).find('[name=PrivacyAccepted]').is(':checked')) {
+            e.preventDefault();
+            alert('Нужно согласие с политикой конфиденциальности');
+            return false;
+        }
+    });
     mask(".tel_input");
 });
+
+function isAllowedRuEmail(email) {
+    var match = email.match(/^[^@\s]+@([^@\s]+)$/);
+    if (!match) {
+        return false;
+    }
+    var host = match[1].toLowerCase();
+    return host.endsWith('.ru') || host.endsWith('.рф') || host.endsWith('.xn--p1ai');
+}
 
 function initLangSelect() {
     var currentLang = getCookieParam('lng');

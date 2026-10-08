@@ -21,8 +21,9 @@ html, body {
 }
 
 .wrapper {
-    overflow: hidden;
-    max-width: 353px;
+    overflow: auto;
+    max-width: 390px;
+    max-height: 100vh;
     background: rgb(255 255 255 / 85%);
     padding: 30px;
     border-radius: 5px;
@@ -131,6 +132,23 @@ input[type="radio"] {
     margin-top: 20px;
 }
 
+.form-inner form .field.consent {
+    height: auto;
+    font-size: 14px;
+    line-height: 1.35;
+}
+
+.form-inner form .field.consent input {
+    height: auto;
+    width: auto;
+    margin-right: 8px;
+    padding-left: 0;
+}
+
+.form-inner form .field.consent a {
+    color: #128156;
+}
+
     .form-inner form .field input {
         height: 100%;
         width: 100%;
@@ -162,7 +180,7 @@ form .field input:focus::placeholder {
 
 .form-inner form .signup-link {
     text-align: center;
-    margin-top: 113px;
+    margin-top: 24px;
 }
 
     .form-inner form .pass-link a,

@@ -638,6 +638,7 @@
     <Content Include="Views\TimesMachine\EditorBook.cshtml" />
     <Content Include="Views\TimesMachine\SearchPartialMain.cshtml" />
     <Content Include="Views\Account\userVerification.cshtml" />
+    <Content Include="Views\Account\Privacy.cshtml" />
     <Content Include="Views\Map3d\Index.cshtml" />
     <Content Include="Views\Map3d\Editor.cshtml" />
     <Content Include="Views\TimesMachine\HowTo.cshtml" />

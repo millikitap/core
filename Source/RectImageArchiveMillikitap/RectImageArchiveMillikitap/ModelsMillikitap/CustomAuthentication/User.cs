@@ -18,6 +18,8 @@ namespace RectImageArchiveMillikitap.Models.User
         public bool IsActive { get; set; }
         public Guid ActivationCode { get; set; }
         public string Telephone { get; set; }
+        public string PlaceOfStudyWork { get; set; }
+        public DateTime? PrivacyAcceptedAt { get; set; }
         public virtual ICollection<Role> Roles { get; set; }
         public virtual ICollection<Likes> Likes { get; set; }        
     }
@@ -26,5 +28,8 @@ namespace RectImageArchiveMillikitap.Models.User
     {
         [NotMapped]
         public string ConfirmPassword { get; set; }
+
+        [NotMapped]
+        public bool PrivacyAccepted { get; set; }
     }
 }

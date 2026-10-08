@@ -14,6 +14,12 @@ namespace RectImageArchiveMillikitap
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             routes.MapRoute(
+                name: "Privacy",
+                url: "privacy",
+                defaults: new { controller = "Account", action = "Privacy" }
+            );
+
+            routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Account", action = "Index", id = UrlParameter.Optional }

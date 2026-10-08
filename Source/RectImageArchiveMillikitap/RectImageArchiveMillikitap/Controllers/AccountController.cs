@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Globalization;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -36,6 +37,13 @@ namespace RectImageArchiveMillikitap.Controllers
                     return RedirectToAction("Login");
                 }
             }
+        }
+
+        [HttpGet]
+        public ActionResult Privacy()
+        {
+            ViewBag.Title = "Политика конфиденциальности";
+            return View();
         }
 
         public async Task<ActionResult> Login(string ReturnUrl = "", string info = "")
@@ -209,6 +217,22 @@ namespace RectImageArchiveMillikitap.Controllers
             }
             if (ModelState.IsValid)
             {
+                if (string.IsNullOrWhiteSpace(registrationView.FirstName) || string.IsNullOrWhiteSpace(registrationView.LastName))
+                {
+                    return RedirectToAction("Login", new { info = "Укажите имя и фамилию" });
+                }
+                if (string.IsNullOrWhiteSpace(registrationView.PlaceOfStudyWork))
+                {
+                    return RedirectToAction("Login", new { info = "Укажите место учёбы или работы" });
+                }
+                if (!IsAllowedRegistrationEmail(registrationView.Username))
+                {
+                    return RedirectToAction("Login", new { info = "Допускаются только адреса на доменах .ru и .рф" });
+                }
+                if (!registrationView.PrivacyAccepted)
+                {
+                    return RedirectToAction("Login", new { info = "Нужно согласие с политикой конфиденциальности" });
+                }
                 if (string.IsNullOrEmpty(registrationView.Password) || string.IsNullOrEmpty(registrationView.ConfirmPassword))
                 {
                     return RedirectToAction("Login", new { info = languagesPack["Некорректно_заполнено_поле_пароль"] });
@@ -232,14 +256,16 @@ namespace RectImageArchiveMillikitap.Controllers
                 {
                     var user = new User()
                     {
-                        Username = registrationView.Username,
-                        FirstName = registrationView.FirstName,
-                        LastName = registrationView.LastName,
+                        Username = registrationView.Username.Trim(),
+                        FirstName = registrationView.FirstName.Trim(),
+                        LastName = registrationView.LastName.Trim(),
                         Email = registrationView.Username,
                         Password = registrationView.Password,
                         IsActive = true,
                         ActivationCode = Guid.NewGuid(),
-                        Telephone = registrationView.Telephone
+                        Telephone = registrationView.Telephone,
+                        PlaceOfStudyWork = registrationView.PlaceOfStudyWork.Trim(),
+                        PrivacyAcceptedAt = DateTime.Now
                     };
                     
                     dbContext.Users.Add(user);
@@ -416,6 +442,39 @@ namespace RectImageArchiveMillikitap.Controllers
             {
                 return RedirectToAction("Index");
             }
+        }
+
+        static bool IsAllowedRegistrationEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return false;
+            }
+            email = email.Trim();
+            try
+            {
+                var address = new MailAddress(email);
+                if (!string.Equals(address.Address, email, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+                var idn = new IdnMapping();
+                var unicodeHost = idn.GetUnicode(address.Host);
+                var asciiHost = idn.GetAscii(address.Host);
+                return EndsWithDomain(unicodeHost, ".ru")
+                    || EndsWithDomain(unicodeHost, ".рф")
+                    || EndsWithDomain(asciiHost, ".ru")
+                    || EndsWithDomain(asciiHost, ".xn--p1ai");
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        static bool EndsWithDomain(string host, string suffix)
+        {
+            return host != null && host.EndsWith(suffix, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
